@@ -1,3 +1,3 @@
 # python-FRED
-![Zoe 2 img](assets/Zoe2.png)
+![Zoe 2 img](assets/Zoe2-FRED.svg)
 This repository provides the devkit tools for working with the Flooded Road Environments Dataset (FRED). This autonomous vehicle dataset has been developed to enable research into the detection of flooded roads during on-road deployment. The dataset was collected using a Renault Zoe with custom modifications to enable autonomy, including front and rear Blackfly cameras, an Ouster OS1 LiDAR, and a GNSS-corrected IMU. Data has been collected using the vehicle's sensor stack from 5 separate locations around Brisbane, Australia, both during and after flooding events. Semantic labels are provided for images to enable the development of detection methods, and corresponding position information from the GNSS-corrected IMU has been provided across sequences to additionally enable localization research for these scenarios.
