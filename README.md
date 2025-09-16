@@ -13,7 +13,11 @@ We adopt the following structure for FRED to include a KITTI-style format for th
   │   |   ├── Cambogan_20250811_113017    # Sequence by location
   │   |   |   ├── back-imgs
   │   |   |   |   └── <timestamp>.png     # Images in 'png' format
+  │   |   |   ├── back-labels
+  │   |   |   |   └── <timestamp>.png     # Images in 'png' format
   │   |   |   ├── front-imgs
+  │   |   |   |   └── <timestamp>.png
+  │   |   |   ├── front-labels
   │   |   |   |   └── <timestamp>.png
   │   |   |   ├── imu
   │   |   |   |   └── <timestamp>.txt     # IMU data formatted as a 'txt' file
