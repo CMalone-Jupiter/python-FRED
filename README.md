@@ -14,11 +14,11 @@ We adopt the following structure for FRED to include a KITTI-style format for th
   │   |   |   ├── back-imgs
   │   |   |   |   └── <timestamp>.png     # Images in 'png' format
   │   |   |   ├── back-labels
-  │   |   |   |   └── <timestamp>.png     # Images in 'png' format
+  │   |   |   |   └── <timestamp>.png     # Semantic labels in 'png' format
   │   |   |   ├── front-imgs
-  │   |   |   |   └── <timestamp>.png
+  │   |   |   |   └── <timestamp>.png     # Images in 'png' format
   │   |   |   ├── front-labels
-  │   |   |   |   └── <timestamp>.png
+  │   |   |   |   └── <timestamp>.png     # Semantic labels in 'png' format
   │   |   |   ├── imu
   │   |   |   |   └── <timestamp>.txt     # IMU data formatted as a 'txt' file
   │   |   |   ├── ouster
