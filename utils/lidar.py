@@ -2,9 +2,12 @@ import numpy as np
 import os
 
 class PointCloud:
-    def __init__(self, file_path, transform_path):
+    def __init__(self, file_path, calib_path):
 
         self.points = self.load_pointcloud(file_path)
+        calibration = self.read_calib_file(calib_path)
+        self.P2, self.R0, self.Tr4 = self.get_matrices(calibration)
+
 
     
     def load_pointcloud(self, file_path):
@@ -31,7 +34,7 @@ class PointCloud:
 
         return points_array
     
-    def read_calib_file(path):
+    def read_calib_file(self,path):
         """
         Read KITTI-style calibration file lines like:
         P2: <12 numbers>
@@ -50,7 +53,7 @@ class PointCloud:
                 d[key.strip()] = np.array(nums)
         return d
 
-    def get_matrices(calib):
+    def get_matrices(self,calib):
         # P2 (3x4)
         P2 = calib['P2'].reshape(3,4)
         # R0_rect (3x3) or identity
@@ -61,18 +64,18 @@ class PointCloud:
         Tr4 = np.vstack((Tr, [0,0,0,1]))
         return P2, R0, Tr4
 
-    def points_ouster_to_cam(pts_ouster, Tr4):
+    def points_ouster_to_cam(self,):
         """
         pts_ouster: (N,3) numpy array in LiDAR frame.
         Tr4: 4x4 homogeneous transform from velodyne -> camera.
         Returns pts_cam (N,3) in camera coordinates.
         """
-        n = pts_ouster.shape[0]
-        pts_h = np.hstack((pts_ouster, np.ones((n,1))))        # (N,4)
-        pts_cam_h = (Tr4 @ pts_h.T).T                       # (N,4)
+        n = self.points.shape[0]
+        pts_h = np.hstack((self.points, np.ones((n,1))))        # (N,4)
+        pts_cam_h = (self.Tr4 @ pts_h.T).T                       # (N,4)
         return pts_cam_h[:, :3]
 
-    def project_to_image(pts_cam, P2, R0_rect=None):
+    def project_to_image(self,pts_cam, P2, R0_rect=None):
         """
         pts_cam: (N,3) in camera coordinates (before rectification)
         R0_rect: 3x3 rectification matrix (if None, identity)
