@@ -1,44 +1,25 @@
 import numpy as np
 import cv2
 from PIL import Image
+from utils.utils import read_calib_file
 
 class ImageData():
     def __init__(self, file_path, calib_path):
         self.image = cv2.imread(file_path)
 
-        intrinsics = self.read_calib_file(calib_path)
-        focal_len = intrinsics['focal_len']
-        principal_x = intrinsics['principal_x']
-        principal_y = intrinsics['principal_y']
-        pp_mm_x = intrinsics['pp_mm_x']
-        pp_mm_y = intrinsics['pp_mm_y']
+        intrinsics = read_calib_file(calib_path)
+        focal_len = intrinsics['focal_len'][0]
+        principal_x = intrinsics['principal_x'][0]
+        principal_y = intrinsics['principal_y'][0]
+        pp_mm_x = intrinsics['pp_mm_x'][0]
+        pp_mm_y = intrinsics['pp_mm_y'][0]
 
-        self.camera_matrix = self.create_camera_matrix(focal_len, principal_x, principal_y, 
-                                                       pp_mm_x, pp_mm_y)
+        # print(f"{focal_len}, {principal_x}, {principal_y}, {pp_mm_x}, {pp_mm_y}")
+
+        self.camera_matrix = self.create_camera_matrix(focal_len, principal_x, principal_y, pp_mm_x, pp_mm_y)
         self.dist_coeffs = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
 
-    def read_calib_file(self, path):
-        """
-        Read camera intrinsics in file with format:
-        focal_len: <value> The camera focal length in mm
-        principal_x: <value> principal x coordinate in pixels
-        principal_y: <value> principal y coordinate in pixels
-        pp_mm_x: <value> pixels per mm in x direction
-        pp_mm_y: <value> pixels per mm in y direction
-        Returns a dict mapping keys to numpy arrays.
-        """
-        d = {}
-        with open(path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if not line or ':' not in line or line.startswith('#'):
-                    continue
-                key, vals = line.split(':', 1)
-                nums = [float(x) for x in vals.strip().split()]
-                d[key.strip()] = np.array(nums)
-        return d
-
-    def create_camera_matrix(focal_length_mm, principal_point_x_pixels, principal_point_y_pixels,
+    def create_camera_matrix(self, focal_length_mm, principal_point_x_pixels, principal_point_y_pixels,
                             pixels_per_mm_x, pixels_per_mm_y):
         """
         Create camera matrix from physical camera parameters.

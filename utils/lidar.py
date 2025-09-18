@@ -1,11 +1,12 @@
 import numpy as np
 import os
+from utils.utils import read_calib_file
 
 class PointCloud:
     def __init__(self, file_path, calib_path):
 
         self.points = self.load_pointcloud(file_path)
-        calibration = self.read_calib_file(calib_path)
+        calibration = read_calib_file(calib_path)
         self.P2, self.R0, self.Tr4 = self.get_matrices(calibration)
 
 
@@ -34,24 +35,6 @@ class PointCloud:
 
         return points_array
     
-    def read_calib_file(self,path):
-        """
-        Read KITTI-style calibration file lines like:
-        P2: <12 numbers>
-        R0_rect: <9 numbers>
-        Tr_ouster_to_cam: <12 numbers>
-        Returns a dict mapping keys to numpy arrays.
-        """
-        d = {}
-        with open(path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if not line or ':' not in line or line.startswith('#'):
-                    continue
-                key, vals = line.split(':', 1)
-                nums = [float(x) for x in vals.strip().split()]
-                d[key.strip()] = np.array(nums)
-        return d
 
     def get_matrices(self,calib):
         # P2 (3x4)

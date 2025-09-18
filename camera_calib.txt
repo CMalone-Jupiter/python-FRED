@@ -1,0 +1,5 @@
+focal_len: 12.00
+principal_x: 960.00
+principal_y: 600.00
+pp_mm_x: 170.648
+pp_mm_y: 170.648
