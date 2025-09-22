@@ -65,3 +65,31 @@ class ImageData():
         except Exception as e:
             print(f"ERROR in create_camera_matrix: {e}")
             return None
+        
+    def project_points(self, points, colours, cmap):
+        # Project to image coordinates
+        rvec = np.zeros(3)  # No additional rotation
+        tvec = np.zeros(3)  # No additional translation
+
+        image_points, _ = cv2.projectPoints(points, rvec, tvec, self.camera_matrix, self.dist_coeffs)
+
+        image_points = image_points.reshape(-1, 2)
+
+        # Filter points within image bounds
+        h, w = self.image.shape[0], self.image.shape[1]
+        valid_img_mask = ((image_points[:, 0] >= 0) & (image_points[:, 0] < w) &
+                            (image_points[:, 1] >= 0) & (image_points[:, 1] < h))
+
+        points2project = image_points[valid_img_mask]
+        colour2project = colours[valid_img_mask]/255
+
+        print(points2project.shape)
+
+        img_vis = self.image.copy()
+        # Draw points
+        for (point, c) in zip(points2project.astype(int), colour2project):
+            r, g, b, _ = cmap(c)
+            colour = (r*255, g*255, b*255)
+            cv2.circle(img_vis, (int(point[0]), int(point[1])), 3, colour, -1)  # -1 = filled circle
+
+        return img_vis
