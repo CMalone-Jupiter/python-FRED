@@ -20,11 +20,8 @@ location = 'Holmview'
 
 ################ Query filenames and directories #################################
 qry_sequence = '20250820_130327'
-# qry_sequence = '20250812_120856'
-# qry_sequence = '20250812_120100'
 # qry_sequence = '20250811_113017'
 qry_condition = 'flooded'
-# qry_condition = 'dry'
 qry_camera_pos = 'front'
 qry_root_directory = f"../Datasets/FRED/{qry_condition}/KITTI-style"
 
@@ -47,6 +44,8 @@ ref_utm_filenames = np.array([filename for filename in natsorted(os.listdir(ref_
 
 img_calib_file = f"./camera_calib.txt"
 
+dist_tolerance = 10 # metres
+
 
 fig, ax = plt.subplots(1, 2, figsize=(19.4, 6))
 idx = [0]  # mutable index
@@ -67,24 +66,33 @@ def show_image(i):
     diffs = ref_utms - qry_utm           # shape (N, 2)
     dists = np.linalg.norm(diffs, axis=1)   # shape (N,)
     closest_idx = np.argmin(dists)
-
-    ref_img_timestamp = utils.get_corr_files(ref_utm_filenames[closest_idx].split('.txt')[0], [ref_image_dir,])
+    closest_dist = dists[closest_idx]
 
     qry_image = ImageData(qry_image_filename, img_calib_file)
-    ref_image = ImageData(ref_img_timestamp, img_calib_file)
 
 
     ax[0].imshow(qry_image.image[:, :, ::-1])
-    ax[1].imshow(ref_image.image[:, :, ::-1])
     ax[0].set_title(f"{qry_image_timestamp}.png")
-    ax[1].set_title(f"{ref_img_timestamp.split('/')[-1]}")
     ax[0].axis("off")
+
+    if closest_dist <= dist_tolerance:
+        # Show matching reference image
+        ref_img_timestamp = utils.get_corr_files(ref_utm_filenames[closest_idx].split('.txt')[0], [ref_image_dir,])
+        ref_image = ImageData(ref_img_timestamp, img_calib_file)
+        ax[1].imshow(ref_image.image[:, :, ::-1])
+        ax[1].set_title(f"{ref_img_timestamp.split('/')[-1]}\nDist={closest_dist:.2f}m")
+    else:
+        # Show black image with message
+        black_img = np.zeros_like(qry_image.image)
+        ax[1].imshow(black_img)
+        ax[1].text(
+            0.5, 0.5, "No reference image found\nwithin distance tolerance",
+            color="white", fontsize=16, ha="center", va="center", transform=ax[1].transAxes
+        )
+        ax[1].set_title(f"No Match (min dist={closest_dist:.2f}m)")
+
     ax[1].axis("off")
     fig.canvas.draw()
-    # except Exception as e:
-    #     print(f"Could localise image {qry_image_timestamp}.png: {e}")
-    #     idx[0] += 1
-    #     show_image(idx[0])  # skip bad one
 
 def on_key(event):
     if event.key in [' ', 'right']:  # space or right arrow
