@@ -42,17 +42,3 @@ def get_corr_files(image_timestamp, dirs, tol=200000):
         return output_filenames[0]
     else:
         return tuple(output_filenames)
-
-
-
-    # utm_timestamps = np.array([int(filename.split('.txt')[0]) for filename in os.listdir(dir_two) if os.path.isfile(dir_two+filename)])
-
-    # closest_utm = np.argmin(abs(utm_timestamps-int(image_timestamp)))
-    # timestamp_diff = abs(int(image_timestamp)-utm_timestamps[closest_utm])
-
-    # if timestamp_diff > timestamp_tolerance:
-    #     raise Exception("No utm measurment in close enough proximity")
-    # else:
-    #     utm_filename = f"{dir_two}/{utm_timestamps[closest_utm]}.txt"
-
-    # return lidar_filename, utm_filename

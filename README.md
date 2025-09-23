@@ -39,3 +39,29 @@ We adopt the following structure for FRED to include a KITTI-style format for th
       ├── KITTI-style                     
       └── native-RTmaps              
 ```  
+  
+## Data Formats  
+### Image Format  
+Images are stored in PNG format.  
+
+### Point Cloud Format
+Point clouds are stored in binary format (.bin), with each point containing x, y, z positions, as well as reflectivity values. Reflectivity values are surface normalized signal intensity measurements that range from 0 to 255. 3D coordinates are captured in the right-hand coordinate frame with the positive x-axis in the vehicle's direction of travel.  
+
+### UTM Format
+UTM data is stored in text file format (.txt), with UTM x and y values being stored as space separated values in the file.  
+
+### IMU Format
+Additional IMU information is also stored in text file format (.txt). A space delimiter is again used to separate values. The additional IMU data is stored in the following order:  
+'''
+| Latitude, Longitude, Altitude,  
+Roll, Pitch, Yaw,  
+North Velocity, East Velocity,  
+x Velocity, y Velocity, z Velocity,
+x Angular Velocity, y Angular Velocity, z Angular Velocity,  
+x Angular Velocity, y Angular Velocity, z Angular Velocity,  
+x Angular Accel, y Angular Accel, z Angular Accel,  
+x Angular Accel, y Angular Accel, z Angular Accel,  
+Position Accuracy, Velocity Accuracy,  
+Navstate Value, Numstat Value,  
+Position Mode, Velocity Mode, Orientation Mode |  
+'''
