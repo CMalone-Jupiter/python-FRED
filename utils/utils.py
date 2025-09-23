@@ -21,30 +21,38 @@ def read_calib_file(path):
             d[key.strip()] = np.array(nums)
     return d
 
-def get_corr_files(image_timestamp, lidar_dir, utm_dir):
-    ############ Find closest point cloud and UTM position data ########################
+def get_corr_files(image_timestamp, dirs, tol=200000):
+    output_filenames = []
+    for dir in dirs:
+        ############ Find closest point cloud and UTM position data ########################
+        filenames = np.array([filename for filename in os.listdir(dir) if os.path.isfile(dir+filename)])
+        timestamps = np.array([int(filename.split('.')[0]) for filename in os.listdir(dir) if os.path.isfile(dir+filename)])
 
-    lidar_timestamps = np.array([int(filename.split('.bin')[0]) for filename in os.listdir(lidar_dir) if os.path.isfile(lidar_dir+filename)])
+        closest_lidar = np.argmin(abs(timestamps-int(image_timestamp)))
+        timestamp_diff = abs(int(image_timestamp)-timestamps[closest_lidar])
 
-    closest_lidar = np.argmin(abs(lidar_timestamps-int(image_timestamp)))
-    timestamp_diff = abs(int(image_timestamp)-lidar_timestamps[closest_lidar])
+        timestamp_tolerance = tol # in microseconds (0.2 seconds)
 
-    timestamp_tolerance = 200000 # in microseconds (0.2 seconds)
+        if timestamp_diff > timestamp_tolerance:
+            raise Exception(f"No timestamp in {dir} in close enough proximity to {image_timestamp}")
+        else:
+            output_filenames.append(f"{dir}/{filenames[closest_lidar]}")
 
-    if timestamp_diff > timestamp_tolerance:
-        raise Exception("No pointcloud in close enough proximity")
+    if len(dirs) == 1:
+        return output_filenames[0]
     else:
-        lidar_filename = f"{lidar_dir}/{lidar_timestamps[closest_lidar]}.bin"
+        return tuple(output_filenames)
 
 
-    utm_timestamps = np.array([int(filename.split('.txt')[0]) for filename in os.listdir(utm_dir) if os.path.isfile(utm_dir+filename)])
 
-    closest_utm = np.argmin(abs(utm_timestamps-int(image_timestamp)))
-    timestamp_diff = abs(int(image_timestamp)-utm_timestamps[closest_utm])
+    # utm_timestamps = np.array([int(filename.split('.txt')[0]) for filename in os.listdir(dir_two) if os.path.isfile(dir_two+filename)])
 
-    if timestamp_diff > timestamp_tolerance:
-        raise Exception("No utm measurment in close enough proximity")
-    else:
-        utm_filename = f"{utm_dir}/{utm_timestamps[closest_utm]}.txt"
+    # closest_utm = np.argmin(abs(utm_timestamps-int(image_timestamp)))
+    # timestamp_diff = abs(int(image_timestamp)-utm_timestamps[closest_utm])
 
-    return lidar_filename, utm_filename
+    # if timestamp_diff > timestamp_tolerance:
+    #     raise Exception("No utm measurment in close enough proximity")
+    # else:
+    #     utm_filename = f"{dir_two}/{utm_timestamps[closest_utm]}.txt"
+
+    # return lidar_filename, utm_filename

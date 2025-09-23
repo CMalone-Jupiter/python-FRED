@@ -83,7 +83,7 @@ class ImageData():
         points2project = image_points[valid_img_mask]
         colour2project = colours[valid_img_mask]/255
 
-        print(points2project.shape)
+        # print(points2project.shape)
 
         img_vis = self.image.copy()
         # Draw points
