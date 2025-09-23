@@ -52,8 +52,8 @@ UTM data is stored in text file format (.txt), with UTM x and y values being sto
 
 ### IMU Format
 Additional IMU information is also stored in text file format (.txt). A space delimiter is again used to separate values. The additional IMU data is stored in the following order:  
-'''
-| Latitude, Longitude, Altitude,  
+```
+[ Latitude, Longitude, Altitude,  
 Roll, Pitch, Yaw,  
 North Velocity, East Velocity,  
 x Velocity, y Velocity, z Velocity,
@@ -63,5 +63,5 @@ x Angular Accel, y Angular Accel, z Angular Accel,
 x Angular Accel, y Angular Accel, z Angular Accel,  
 Position Accuracy, Velocity Accuracy,  
 Navstate Value, Numstat Value,  
-Position Mode, Velocity Mode, Orientation Mode |  
-'''
+Position Mode, Velocity Mode, Orientation Mode ]  
+```
