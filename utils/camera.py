@@ -4,7 +4,7 @@ from PIL import Image
 from utils.utils import read_calib_file
 
 class ImageData():
-    def __init__(self, file_path, calib_path):
+    def __init__(self, file_path, calib_path, label_path=None):
         self.image = cv2.imread(file_path)
 
         intrinsics = read_calib_file(calib_path)
@@ -18,6 +18,13 @@ class ImageData():
 
         self.camera_matrix = self.create_camera_matrix(focal_len, principal_x, principal_y, pp_mm_x, pp_mm_y)
         self.dist_coeffs = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
+
+        self.semantic_classes = None
+        self.colour_label = None
+
+        if label_path is not None:
+            self.semantic_classes = {'road': [0, 0, 128], 'water': [0, 128, 0], 'other': [0, 0, 0]} # In the opencv BGR convention
+            self.colour_label = cv2.resize(cv2.imread(label_path), (self.image.shape[1], self.image.shape[0]))
 
     def create_camera_matrix(self, focal_length_mm, principal_point_x_pixels, principal_point_y_pixels,
                             pixels_per_mm_x, pixels_per_mm_y):
