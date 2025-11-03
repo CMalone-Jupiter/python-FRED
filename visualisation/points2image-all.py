@@ -15,12 +15,12 @@ from natsort import natsorted
 cmap = plt.get_cmap("jet")
 
 # User parameters
-# location = 'Cambogan'
-# sequence = '20250811_113017'
+location = 'Cambogan'
+sequence = '20250811_113017'
 # location = 'Holmview'
 # sequence = '20250820_130327'
-location = 'Mount-Cotton'
-sequence = '20241217_113410'
+# location = 'Mount-Cotton'
+# sequence = '20241217_113410'
 condition = 'flooded'
 camera_pos = 'front'
 root_directory = f"../Datasets/FRED/{condition}/KITTI-style"

@@ -15,12 +15,12 @@ from natsort import natsorted
 cmap = plt.get_cmap("jet")
 
 # User parameters
-location = 'Holmview'
-# location = 'Cambogan'
+# location = 'Holmview'
+location = 'Cambogan'
 
 ################ Query filenames and directories #################################
-qry_sequence = '20250820_130327'
-# qry_sequence = '20250811_113017'
+# qry_sequence = '20250820_130327'
+qry_sequence = '20250811_113017'
 qry_condition = 'flooded'
 qry_camera_pos = 'front'
 qry_root_directory = f"../Datasets/FRED/{qry_condition}/KITTI-style"
@@ -30,8 +30,8 @@ qry_utm_dir = f"{qry_root_directory}/{location}_{qry_sequence}/utm/"
 qry_timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(qry_image_dir)) if os.path.isfile(qry_image_dir+filename)]
 
 ################ Reference filenames and directories #################################
-ref_sequence = '20250812_120100'
-# ref_sequence = '20250812_122339'
+# ref_sequence = '20250812_120100'
+ref_sequence = '20250812_122339'
 ref_condition = 'dry'
 ref_camera_pos = 'front'
 ref_root_directory = f"../Datasets/FRED/{ref_condition}/KITTI-style"

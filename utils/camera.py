@@ -24,13 +24,14 @@ class ImageData():
         self.colour_label = None
         self.semantic_classes = {'road': [0, 0, 128], 'water': [0, 128, 0], 'other': [0, 0, 0]} # In the opencv BGR convention
 
-        if label_path is not None and os.path.exists(label_path):
-            label_img = cv2.imread(label_path)
-        else:
-            # Catch for no label existing #
-            print(f"Could not load label \'{label_path}\'. Using blank labels.")
-            label_img = np.zeros(self.image.shape).astype(np.uint8)
-        self.colour_label = cv2.resize(label_img, (self.image.shape[1], self.image.shape[0]))
+        if label_path is not None:        
+            if os.path.exists(label_path):
+                label_img = cv2.imread(label_path)
+            else:
+                # Catch for no label existing #
+                print(f"Could not load label \'{label_path}\'. Using blank labels.")
+                label_img = np.zeros(self.image.shape).astype(np.uint8)
+            self.colour_label = cv2.resize(label_img, (self.image.shape[1], self.image.shape[0]))
 
     def create_camera_matrix(self, focal_length_mm, principal_point_x_pixels, principal_point_y_pixels,
                             pixels_per_mm_x, pixels_per_mm_y):
