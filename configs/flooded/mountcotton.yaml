@@ -1,0 +1,6 @@
+location: "Mount-Cotton"
+sequence: "20241217_113410"
+condition: "flooded"
+camera_pos: "front"
+root: "../Datasets/FRED/"
+img_calib_file: "./camera_calib.txt"

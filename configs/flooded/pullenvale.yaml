@@ -1,0 +1,6 @@
+location: "Pullenvale"
+sequence: "20250916_124105"
+condition: "flooded"
+camera_pos: "front"
+root: "../Datasets/FRED/"
+img_calib_file: "./camera_calib.txt"

@@ -1,0 +1,6 @@
+location: "Cambogan"
+sequence: "20250812_122621"
+condition: "dry"
+camera_pos: "front"
+root: "../Datasets/FRED/"
+img_calib_file: "./camera_calib.txt"

@@ -1,0 +1,6 @@
+location: "Holmview"
+sequence: "20250812_120100"
+condition: "dry"
+camera_pos: "front"
+root: "../Datasets/FRED/"
+img_calib_file: "./camera_calib.txt"
