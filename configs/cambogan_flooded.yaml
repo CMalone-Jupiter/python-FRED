@@ -1,0 +1,6 @@
+location: "Cambogan"
+sequence: "20250811_113017"
+condition: "flooded"
+camera_pos: "front"
+root: "../Datasets/FRED/"
+img_calib_file: "./camera_calib.txt"

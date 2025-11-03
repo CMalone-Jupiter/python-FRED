@@ -1,4 +1,5 @@
 import os
+import argparse
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import sys
@@ -11,18 +12,71 @@ from utils.lidar import PointCloud
 from utils.camera import ImageData
 import utils.utils as utils
 from natsort import natsorted
+import json
+import yaml  # pip install pyyaml
 
 cmap = plt.get_cmap("jet")
 
-# User parameters
-# location = 'Cambogan'
-# sequence = '20250811_113017'
-location = 'Holmview'
-sequence = '20250820_130327'
-condition = 'flooded'
-camera_pos = 'front'
-root_directory = f"../Datasets/FRED/{condition}/KITTI-style"
-# 01000000
+# ---------------- Argument Parsing ---------------- #
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--config", type=str, help="Path to config file (YAML or JSON). If provided, overrides other args.")
+
+parser.add_argument("--location", type=str, default="Cambogan", help="Location name (e.g., Cambogan)")
+parser.add_argument("--sequence", type=str, default="20250811_113017", help="Sequence ID (e.g., 20250811_113017)")
+parser.add_argument("--condition", type=str, default="flooded", help="Condition (e.g., flooded)")
+parser.add_argument("--camera_pos", type=str, default="front", help="Camera position (e.g., front)")
+parser.add_argument("--root", type=str, default="../Datasets/FRED/", help="Root dataset directory (e.g., ../Datasets/FRED/)")
+parser.add_argument("--img_calib_file", type=str, default="./camera_calib.txt", help="Path to camera calibration file (e.g., ./camera_calib.txt)")
+
+args = parser.parse_args()
+
+# ---------------- Config Loading ---------------- #
+if args.config:
+    if args.config.endswith(".yaml") or args.config.endswith(".yml"):
+        with open(args.config, "r") as f:
+            cfg = yaml.safe_load(f)
+    elif args.config.endswith(".json"):
+        with open(args.config, "r") as f:
+            cfg = json.load(f)
+    else:
+        raise ValueError("Config file must be .yaml, .yml, or .json")
+
+    location = cfg["location"]
+    sequence = cfg["sequence"]
+    condition = cfg["condition"]
+    camera_pos = cfg["camera_pos"]
+    root = cfg["root"]
+    root_directory = f"{root}/{condition}/KITTI-style"
+    img_calib_file = cfg["img_calib_file"]
+
+else:
+    # Fallback: require all CLI args
+    required_args = ["location", "sequence", "condition", "camera_pos", "root", "img_calib_file"]
+    missing = [arg for arg in required_args if getattr(args, arg) is None]
+    if missing:
+        parser.error(f"Missing arguments: {', '.join(missing)} (or provide --config)")
+
+    location = args.location
+    sequence = args.sequence
+    condition = args.condition
+    camera_pos = args.camera_pos
+    root_directory = f"{args.root}/{args.condition}/KITTI-style"
+    img_calib_file = args.img_calib_file
+
+# # User parameters
+# # location = 'Cambogan'
+# # sequence = '20250811_113017'
+# # location = 'Holmview'
+# # sequence = '20250820_130327'
+# # location = 'Pullenvale'
+# # sequence = '20250916_124105'
+# location = 'Mount-Cotton'
+# sequence = '20241217_113410'
+# condition = 'flooded'
+# camera_pos = 'front'
+# root_directory = f"../Datasets/FRED/{condition}/KITTI-style"
+# # 01000000
 
 ############ Define filenames and directories ####################################
 
@@ -47,14 +101,17 @@ def show_image(i):
 
         label_mask = np.any(image.colour_label != image.semantic_classes['other'], axis=-1)
         overlay_img = image.image.copy()
-        overlay_img[label_mask] = cv2.addWeighted(image.image[label_mask], 0.5, image.colour_label[label_mask], 0.5, 0)
+
+        # Catch for when there is no label or all pixels are labelled as 'other' (i.e. not labelled) #
+        if not np.all(image.colour_label == image.semantic_classes['other']):
+            overlay_img[label_mask] = cv2.addWeighted(image.image[label_mask], 0.5, image.colour_label[label_mask], 0.5, 0)
 
         ax.imshow(overlay_img[:, :, ::-1])
         ax.set_title(f"{image_timestamp}.png")
         ax.axis("off")
         fig.canvas.draw()
     except Exception as e:
-        print(f"Could not project pointcloud onto {image_timestamp}.png: {e}")
+        print(f"Could not show label for {image_timestamp}.png: {e}")
         idx[0] += 1
         show_image(idx[0])  # skip bad one
 
