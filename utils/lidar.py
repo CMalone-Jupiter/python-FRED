@@ -1,11 +1,30 @@
 import numpy as np
 import os
-from utils.utils import read_calib_file
+from utils.utils import read_calib_file #, compute_os1_angles, elevation_to_beam_id
+
+INLIER_BIT = 1 << 8
+INSTANCE_SHIFT = 16
+beam_altitude_angles_deg = np.array([
+    20.97, 18.51, 15.97, 13.37, 12.04, 10.70, 9.35, 8.70,
+    7.99, 7.34, 6.62, 5.96, 5.23, 4.55, 3.84, 3.51,
+    3.17, 2.82, 2.46, 2.11, 1.76, 1.43, 1.05, 0.70,
+    0.36, 0.03, -0.34, -0.70, -1.04, -1.37, -1.76, -2.10,
+    -2.43, -2.77, -3.15, -3.48, -3.84, -4.18, -4.54, -4.88,
+    -5.24, -5.55, -5.93, -6.29, -6.63, -6.94, -7.32, -7.67,
+    -8.00, -8.33, -9.04, -9.71, -10.42, -11.06, -11.77, -12.41,
+    -13.12, -13.74, -15.06, -16.36, -17.64, -18.91, -20.16, -21.38
+])
 
 class PointCloud:
     def __init__(self, file_path, calib_path):
 
         self.points = self.load_pointcloud(file_path)
+        ground_labels = np.fromfile(f"{file_path.split('/ouster')[0]}/ouster_ground_labels/{file_path.split('/')[-1].split('.bin')[0]}.label", dtype=np.uint32)
+        # points = self.load_pointcloud(file_path)
+        # self.points = points[self.ground_labels==0,:]
+        self.ground_semantic = ground_labels & 0xFF
+        self.ground_inlier = (ground_labels & INLIER_BIT) != 0
+        
         calibration = read_calib_file(calib_path)
         self.P2, self.R0, self.Tr4 = self.get_matrices(calibration)
 
@@ -55,11 +74,31 @@ class PointCloud:
         Returns pts_cam (N,3) in camera coordinates.
         """
         n = self.points.shape[0]
-        pts_h = np.column_stack((self.points[:,:3], np.ones((n))))        # (N,4)
+
+        pts_xyz = self.points[:, :3]
+
+        pts_h = np.column_stack((pts_xyz, np.ones((n))))        # (N,4)
         pts_cam_h = (self.Tr4 @ pts_h.T).T[:,:3]                       # (N,4)
 
         valid = pts_cam_h[:,2] > 1e-6
 
+        distances = np.linalg.norm(pts_cam_h[valid,:], axis=1)     
+
+        return pts_cam_h[valid,:], distances, self.points[:,3], pts_cam_h, valid
+    
+    def select_points_ouster_to_cam(self, points):
+        """
+        pts_ouster: (N,3) numpy array in LiDAR frame.
+        Tr4: 4x4 homogeneous transform from ouster -> camera.
+        Returns pts_cam (N,3) in camera coordinates.
+        """
+        n = points.shape[0]
+        pts_h = np.column_stack((points[:,:3], np.ones((n))))        # (N,4)
+        pts_cam_h = (self.Tr4 @ pts_h.T).T[:,:3]                       # (N,4)
+
+        valid = pts_cam_h[:,2] > 1e-6
+        # valid = np.ones((pts_cam_h.shape[0]))
+
         distances = np.linalg.norm(pts_cam_h[valid,:], axis=1)        
 
-        return pts_cam_h[valid,:], distances, self.points[valid,3]
+        return pts_cam_h[valid,:], distances, points[valid,3]

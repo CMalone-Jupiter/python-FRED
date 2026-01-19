@@ -119,6 +119,10 @@ def on_key(event):
     if event.key in [' ', 'right']:  # space or right arrow
         idx[0] += 1
         show_image(idx[0])
+    elif event.key in [' ', 'left']:  # space or right arrow
+        if idx[0] > 0:
+            idx[0] -= 1
+            show_image(idx[0])
     elif event.key in ['q', 'escape']:  # q or Esc → quit
         plt.close(fig)
 

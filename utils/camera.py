@@ -2,7 +2,14 @@ import os
 import numpy as np
 import cv2
 from PIL import Image
-from utils.utils import read_calib_file
+import open3d as o3d
+from utils.utils import read_calib_file #, fill_projected_os1_rings
+
+color_key = {
+    0: [0, 0, 128],   # road
+    1: [0, 128, 0],   # water
+    2: [0, 0, 0]      # other
+}
 
 class ImageData():
     def __init__(self, file_path, calib_path, label_path=None):
@@ -32,6 +39,19 @@ class ImageData():
                 print(f"Could not load label \'{label_path}\'. Using blank labels.")
                 label_img = np.zeros(self.image.shape).astype(np.uint8)
             self.colour_label = cv2.resize(label_img, (self.image.shape[1], self.image.shape[0]))
+
+            H, W, _ = label_img.shape
+            self.label_img = np.full((H, W), -1, dtype=np.uint8)  # unknown = 255
+
+            # Convert to uint8 in case it's float
+            img = label_img.astype(np.uint8)
+
+            for class_idx, color in color_key.items():
+                # Create mask where all 3 channels match
+                mask = np.all(img == color, axis=2)
+                self.label_img[mask] = class_idx
+
+            self.label_img = cv2.resize(self.label_img, (self.image.shape[1], self.image.shape[0]))
 
     def create_camera_matrix(self, focal_length_mm, principal_point_x_pixels, principal_point_y_pixels,
                             pixels_per_mm_x, pixels_per_mm_y):
@@ -80,7 +100,8 @@ class ImageData():
             print(f"ERROR in create_camera_matrix: {e}")
             return None
         
-    def project_points(self, points, colours, cmap):
+    def project_points(self, points, colours, cmap, valid_cam, colour_norm=None):
+        # , beam_id, azimuth
         # Project to image coordinates
         rvec = np.zeros(3)  # No additional rotation
         tvec = np.zeros(3)  # No additional translation
@@ -93,11 +114,13 @@ class ImageData():
         h, w = self.image.shape[0], self.image.shape[1]
         valid_img_mask = ((image_points[:, 0] >= 0) & (image_points[:, 0] < w) &
                             (image_points[:, 1] >= 0) & (image_points[:, 1] < h))
-
-        points2project = image_points[valid_img_mask]
-        colour2project = colours[valid_img_mask]/255
-
-        # print(points2project.shape)
+        
+        valid_mask = valid_img_mask & valid_cam
+        points2project = image_points[valid_mask]
+        if colour_norm is None:
+            colour2project = colours[valid_mask]/colours[valid_img_mask].max()
+        else:
+            colour2project = colours[valid_mask]/colour_norm
 
         img_vis = self.image.copy()
         # Draw points
@@ -106,4 +129,15 @@ class ImageData():
             colour = (r*255, g*255, b*255)
             cv2.circle(img_vis, (int(point[0]), int(point[1])), 3, colour, -1)  # -1 = filled circle
 
-        return img_vis
+        return img_vis, image_points, valid_img_mask
+    
+    def get_image_coords(self, points):
+        # Project to image coordinates
+        rvec = np.zeros(3)  # No additional rotation
+        tvec = np.zeros(3)  # No additional translation
+
+        image_points, _ = cv2.projectPoints(points, rvec, tvec, self.camera_matrix, self.dist_coeffs)
+
+        image_points = image_points.reshape(-1, 2)
+
+        return image_points

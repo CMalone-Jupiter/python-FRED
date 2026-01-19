@@ -15,15 +15,13 @@ from natsort import natsorted
 cmap = plt.get_cmap("jet")
 
 # User parameters
-location = 'Cambogan'
+# location = 'Cambogan'
 # sequence = '20250811_113017'
-sequence = '20250812_122101'
 # location = 'Holmview'
 # sequence = '20250820_130327'
-# location = 'Mount-Cotton'
-# sequence = '20241217_113410'
-# condition = 'flooded'
-condition = 'dry'
+location = 'Mount-Cotton'
+sequence = '20241217_113410'
+condition = 'flooded'
 camera_pos = 'front'
 root_directory = f"../Datasets/FRED/{condition}/KITTI-style"
 # 01000000
@@ -57,11 +55,49 @@ def show_image(i):
         image = ImageData(image_filename, img_calib_file)
         pointcloud = PointCloud(lidar_filename, lidar_calib_file)
 
+        lateral_filter = np.logical_and(-4 < pointcloud.points[:,1], pointcloud.points[:,1] < 1.5)
+        ground_filter = pointcloud.ground_semantic == 0
+        inlier_filter = pointcloud.ground_inlier == 1
+        points_filter = np.logical_and(np.logical_and(lateral_filter, ground_filter), inlier_filter)
+        filtered_points = pointcloud.points[points_filter]
+        pointcloud.points = filtered_points
+        max_lookahead = pointcloud.points[:,0].max()
+        far_points = pointcloud.points[pointcloud.points[:,0]==max_lookahead,:]
 
-        point_cam, distances_cam, intensities_cam, all_points_cam, valid_cam = pointcloud.points_ouster_to_cam() #, beam_id, azimuth
-        img_vis, _, _ = image.project_points(all_points_cam, intensities_cam, cmap, valid_cam) #, beam_id, azimuth
+        if far_points.shape[0] > 1:
+            # pointcloud.points = far_points[abs(far_points[:,1]) == abs(far_points[:,1]).min(),:]
+            far_point = far_points[abs(far_points[:,1]) == abs(far_points[:,1]).min(),:]
+        else:
+            # pointcloud.points = far_points
+            far_point = far_points
+
+        points_cam, distances_cam, intensities_cam, beam_id, azimuth = pointcloud.points_ouster_to_cam()
+        far_point_cam, far_point_distnace, far_point_intensity = pointcloud.select_points_ouster_to_cam(far_point)
+        img_vis = image.project_points(np.vstack((points_cam, far_point_cam)), np.append(intensities_cam, 128), beam_id, azimuth, cmap)
+        far_pixel = image.get_image_coords(far_point_cam)
+
+        if far_pixel is not None and len(far_pixel) > 0:
+            u, v = far_pixel[0]  # pixel coordinates
+
+        h, w = img_vis.shape[:2]
+        bottom_center = (w // 2, h)
 
         ax.imshow(img_vis[:, :, ::-1])
+        ax.plot(
+            [bottom_center[0], u],
+            [bottom_center[1], v],
+            color="lime",
+            linewidth=2
+        )
+        ax.text(
+            u,
+            v - 10,
+            f"{far_point[0,0]:.2f}",
+            color="lime",
+            fontsize=12,
+            ha="center",
+            bbox=dict(facecolor="black", alpha=0.6, edgecolor="none")
+        )
         ax.set_title(f"{image_timestamp}.png")
         ax.axis("off")
         fig.canvas.draw()
