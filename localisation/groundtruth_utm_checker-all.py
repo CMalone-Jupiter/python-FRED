@@ -48,7 +48,8 @@ dist_tolerance = 10 # metres
 
 
 fig, ax = plt.subplots(1, 2, figsize=(19.4, 6))
-idx = [0]  # mutable index
+# idx = [0]  # mutable index
+idx = [183]
 
 def show_image(i):
     ax[0].clear()
@@ -92,6 +93,7 @@ def show_image(i):
         ax[1].set_title(f"No Match (min dist={closest_dist:.2f}m)")
 
     ax[1].axis("off")
+    plt.savefig('paper_figures/localization_check.pdf', format="pdf", bbox_inches='tight')
     fig.canvas.draw()
 
 def on_key(event):

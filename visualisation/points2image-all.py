@@ -16,14 +16,14 @@ cmap = plt.get_cmap("jet")
 
 # User parameters
 location = 'Cambogan'
-# sequence = '20250811_113017'
-sequence = '20250812_122101'
+sequence = '20250811_113017'
+# sequence = '20250812_122101'
 # location = 'Holmview'
 # sequence = '20250820_130327'
 # location = 'Mount-Cotton'
 # sequence = '20241217_113410'
-# condition = 'flooded'
-condition = 'dry'
+condition = 'flooded'
+# condition = 'dry'
 camera_pos = 'front'
 root_directory = f"../Datasets/FRED/{condition}/KITTI-style"
 # 01000000
@@ -42,7 +42,8 @@ timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(ima
 # timestamps.sort()
 
 fig, ax = plt.subplots(figsize=(12.8, 8))
-idx = [0]  # mutable index
+# idx = [0]  # mutable index
+idx = [183]
 
 def show_image(i):
     ax.clear()
@@ -59,11 +60,12 @@ def show_image(i):
 
 
         point_cam, distances_cam, intensities_cam, all_points_cam, valid_cam = pointcloud.points_ouster_to_cam() #, beam_id, azimuth
-        img_vis, _, _ = image.project_points(all_points_cam, intensities_cam, cmap, valid_cam) #, beam_id, azimuth
+        img_vis, _, _ = image.project_points(all_points_cam, distances_cam, cmap, valid_cam, colour_norm=None) #, beam_id, azimuth
 
         ax.imshow(img_vis[:, :, ::-1])
         ax.set_title(f"{image_timestamp}.png")
         ax.axis("off")
+        # plt.savefig('paper_figures/CADRRAS/projected_pointcloud_distance_flooded.svg', format="svg", bbox_inches='tight')
         fig.canvas.draw()
     except Exception as e:
         print(f"Could not project pointcloud onto {image_timestamp}.png: {e}")

@@ -1,3 +1,10 @@
+# All others
+*.png
+*.svg
+*.pdf
+*.profile_default
+*.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

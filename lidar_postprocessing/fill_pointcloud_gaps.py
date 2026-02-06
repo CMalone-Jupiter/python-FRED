@@ -44,7 +44,8 @@ a, b, c, d = groundplane_eqn
 # timestamps.sort()
 
 # idx = [0]  # mutable index
-idx = [0]
+# idx = [0]
+idx = [183]
 
 def show_image(i):
     # ax.clear()
@@ -58,6 +59,11 @@ def show_image(i):
 
         image = ImageData(image_filename, img_calib_file, label_filename)
         pointcloud = PointCloud(lidar_filename, lidar_calib_file)
+        # print(f"Number of points in pointcloud: {pointcloud.points.shape}")
+        # # print(f"Nan's in pointcloud? {np.any( == np.nan)}")
+        # print(f"Number of zeroed points: {np.sum(np.all(pointcloud.points == 0, axis=1))}")
+        # print(f"invalid points in ground plane: {np.sum(pointcloud.ground_semantic[np.all(pointcloud.points == 0, axis=1)]==0)}")
+        pointcloud.points, pointcloud.ground_semantic, pointcloud.ground_inlier = pointcloud.destagger(pointcloud.points, pointcloud.ground_semantic, pointcloud.ground_inlier)
         groundplane_eqn = utils.fit_height_field_linear(pointcloud.points[pointcloud.ground_semantic==0,:3])
         pointcloud.points, interp_flags = utils.complete_cloud(pointcloud.points, groundplane_eqn)
 

@@ -127,7 +127,7 @@ class ImageData():
         for (point, c) in zip(points2project.astype(int), colour2project):
             r, g, b, _ = cmap(c)
             colour = (r*255, g*255, b*255)
-            cv2.circle(img_vis, (int(point[0]), int(point[1])), 3, colour, -1)  # -1 = filled circle
+            cv2.circle(img_vis, (int(point[0]), int(point[1])), 5, colour, -1)  # -1 = filled circle
 
         return img_vis, image_points, valid_img_mask
     

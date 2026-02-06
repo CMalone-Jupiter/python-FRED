@@ -86,7 +86,8 @@ img_calib_file = f"./camera_calib.txt"
 timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(image_dir)) if os.path.isfile(image_dir+filename)]
 
 fig, ax = plt.subplots(figsize=(12.8, 8))
-idx = [0]  # mutable index
+# idx = [0]  # mutable index
+idx = [183]  # mutable index
 
 def show_image(i):
     ax.clear()
@@ -109,6 +110,7 @@ def show_image(i):
         ax.imshow(overlay_img[:, :, ::-1])
         ax.set_title(f"{image_timestamp}.png")
         ax.axis("off")
+        # plt.savefig('paper_figures/semantic_image_labels.pdf', format="pdf", bbox_inches='tight')
         fig.canvas.draw()
     except Exception as e:
         print(f"Could not show label for {image_timestamp}.png: {e}")

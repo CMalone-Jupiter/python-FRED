@@ -83,42 +83,43 @@ def show_image(i):
 
         img_vis, uv, valid_img = image.project_points(all_points_cam, semantic_labels, cmap, valid_cam) #, beam_id, azimuth
 
-        filtered_points = pointcloud.points[(semantic_labels==0) & (abs(pointcloud.points[:,1]) < 1),:]
-        max_lookahead = filtered_points[:,0].max()
-        far_points = filtered_points[filtered_points[:,0]==max_lookahead,:]
+        # filtered_points = pointcloud.points[(semantic_labels==0) & (abs(pointcloud.points[:,1]) < 1),:]
+        # max_lookahead = filtered_points[:,0].max()
+        # far_points = filtered_points[filtered_points[:,0]==max_lookahead,:]
 
-        if far_points.shape[0] > 1:
-            far_point = far_points[abs(far_points[:,1]) == abs(far_points[:,1]).min(),:]
-        else:
-            far_point = far_points
-        far_point_cam, far_point_distnace, far_point_intensity = pointcloud.select_points_ouster_to_cam(far_point)
-        far_pixel = image.get_image_coords(far_point_cam)
+        # if far_points.shape[0] > 1:
+        #     far_point = far_points[abs(far_points[:,1]) == abs(far_points[:,1]).min(),:]
+        # else:
+        #     far_point = far_points
+        # far_point_cam, far_point_distnace, far_point_intensity = pointcloud.select_points_ouster_to_cam(far_point)
+        # far_pixel = image.get_image_coords(far_point_cam)
 
-        if far_pixel is not None and len(far_pixel) > 0:
-            u, v = far_pixel[0]  # pixel coordinates
+        # if far_pixel is not None and len(far_pixel) > 0:
+        #     u, v = far_pixel[0]  # pixel coordinates
 
-        h, w = img_vis.shape[:2]
-        bottom_center = (w // 2, h)
+        # h, w = img_vis.shape[:2]
+        # bottom_center = (w // 2, h)
 
-        ax.plot(
-            [bottom_center[0], u],
-            [bottom_center[1], v],
-            color="lime",
-            linewidth=2
-        )
-        ax.text(
-            u,
-            v - 10,
-            f"{far_point[0,0]:.2f}",
-            color="lime",
-            fontsize=12,
-            ha="center",
-            bbox=dict(facecolor="black", alpha=0.6, edgecolor="none")
-        )
+        # ax.plot(
+        #     [bottom_center[0], u],
+        #     [bottom_center[1], v],
+        #     color="lime",
+        #     linewidth=2
+        # )
+        # ax.text(
+        #     u,
+        #     v - 10,
+        #     f"{far_point[0,0]:.2f}",
+        #     color="lime",
+        #     fontsize=12,
+        #     ha="center",
+        #     bbox=dict(facecolor="black", alpha=0.6, edgecolor="none")
+        # )
 
         ax.imshow(img_vis[:, :, ::-1])
         ax.set_title(f"{image_timestamp}.png")
         ax.axis("off")
+        # plt.savefig('paper_figures/labelled_pointcloud.pdf', format="pdf", bbox_inches='tight')
         fig.canvas.draw()
 
     except Exception as e:

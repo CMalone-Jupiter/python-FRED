@@ -28,6 +28,15 @@ class PointCloud:
         calibration = read_calib_file(calib_path)
         self.P2, self.R0, self.Tr4 = self.get_matrices(calibration)
 
+        self.pixel_shift_by_row = [12, 12, 12, 12, 12, 12, 12, -4, 
+                                   12, -4, 12, -4, 12, -4, 12, 4, 
+                                   -4, -12, 12, 4, -4, -12, 12, 4, 
+                                   -4, -12, 12, 4, -4, -12, 12, 4, 
+                                   -4, -12, 12, 4, -4, -12, 12, 4, 
+                                   -4, -12, 12, 4, -4, -12, 12, 4, 
+                                   -4, -12, 4, -12, 4, -12, 4, -12, 
+                                   4, -12, -12, -12, -12, -12, -12, -12]
+
 
     
     def load_pointcloud(self, file_path):
@@ -84,7 +93,7 @@ class PointCloud:
 
         distances = np.linalg.norm(pts_cam_h[valid,:], axis=1)     
 
-        return pts_cam_h[valid,:], distances, self.points[:,3], pts_cam_h, valid
+        return pts_cam_h[valid,:], np.linalg.norm(pts_cam_h, axis=1), self.points[:,3], pts_cam_h, valid
     
     def select_points_ouster_to_cam(self, points):
         """
@@ -102,3 +111,53 @@ class PointCloud:
         distances = np.linalg.norm(pts_cam_h[valid,:], axis=1)        
 
         return pts_cam_h[valid,:], distances, points[valid,3]
+    
+    def destagger(self, points, ground_labels, inlier_labels):
+
+        pixel_shift_by_row = np.array(self.pixel_shift_by_row)
+
+        H = 64
+        W = 1024
+
+        # pc_img = points.reshape(W, H, 4).transpose(1, 0, 2)
+        # # shape: (64, 1024, 4)
+
+        # rows = np.arange(H)[:, None]
+        # cols = np.arange(W)[None, :]
+
+        # pc_destaggered = pc_img[
+        #     rows,
+        #     (cols - pixel_shift_by_row[:, None]) % W,
+        #     :
+        # ]
+
+        # return pc_destaggered.reshape(-1, 4)
+
+        
+        # --- reshape ---
+        pc_img = points.reshape(W, H, 4).transpose(1, 0, 2)   # (64, 1024, 4)
+        lbl_img = ground_labels.reshape(W, H).T                      # (64, 1024)
+        inlier_img = inlier_labels.reshape(W, H).T 
+
+        rows = np.arange(H)[:, None]
+        cols = np.arange(W)[None, :]
+
+        # --- destagger (IDENTICAL indexing) ---
+        pc_destaggered = pc_img[
+            rows,
+            (cols - pixel_shift_by_row[:, None]) % W,
+            :
+        ]
+
+        lbl_destaggered = lbl_img[
+            rows,
+            (cols - pixel_shift_by_row[:, None]) % W
+        ]
+
+        inlier_destaggered = inlier_img[
+            rows,
+            (cols - pixel_shift_by_row[:, None]) % W
+        ]
+
+        return pc_destaggered.reshape(-1, 4), lbl_destaggered.reshape(-1), inlier_destaggered.reshape(-1)
+

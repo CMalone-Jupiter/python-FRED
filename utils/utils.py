@@ -74,6 +74,15 @@ def compute_ring_ids(points_xyz):
         axis=1
     )
 
+def compute_ring_col_from_index(num_points, num_cols=1024):
+    idx = np.arange(num_points)
+    ring_ids = idx // num_cols
+    col_ids  = idx % num_cols
+    return ring_ids, col_ids
+
+def is_valid_point(points_xyz):
+    return np.linalg.norm(points_xyz, axis=1) > 1e-6
+
 def fill_ring_known_cols_with_intensity(points_xyzi, ring_ids, col_ids):
     """
     points_xyzi: (N,4) -> x,y,z,intensity
@@ -233,11 +242,15 @@ def fill_ring_known_cols_with_intensity_and_plane(
 
 
 def complete_cloud(points_xyzi, plane):
-    ring_ids = compute_ring_ids(points_xyzi[:, :3])
-    col_ids = compute_column_index(points_xyzi[:, :3])
+    # ring_ids = compute_ring_ids(points_xyzi[:, :3])
+    # col_ids = compute_column_index(points_xyzi[:, :3])
+    ring_ids, col_ids = compute_ring_col_from_index(
+        len(points_xyzi), NUM_COLS
+    )
+    valid_mask = is_valid_point(points_xyzi[:, :3])
 
     # return fill_ring_known_cols_with_intensity_and_plane(points_xyzi, ring_ids, col_ids, plane)
-    return fill_ring_known_cols_with_intensity_and_heightfield(points_xyzi, ring_ids, col_ids, plane)
+    return fill_ring_known_cols_with_intensity_and_heightfield(points_xyzi, ring_ids, col_ids, valid_mask, plane)
 
 
 def assign_semantic_labels(
@@ -292,6 +305,7 @@ def fill_ring_known_cols_with_intensity_and_heightfield(
     points_xyzi,
     ring_ids,
     col_ids,
+    valid_mask,
     height_field,   # (a, b, c)
     max_range=200.0
 ):
@@ -303,18 +317,19 @@ def fill_ring_known_cols_with_intensity_and_heightfield(
     filled_points = []
     interp_flags = []
 
-    unique_ring_ids = np.arange(64)
-
-    for ring in unique_ring_ids:
+    for ring in range(64):
         ring_mask = ring_ids == ring
-        ring_pts = points_xyzi[ring_mask]
-        ring_cols = col_ids[ring_mask]
+
+        ring_pts   = points_xyzi[ring_mask]
+        ring_cols  = col_ids[ring_mask]
+        ring_valid = valid_mask[ring_mask]
 
         ring_grid = [None] * NUM_COLS
 
-        # place original points
-        for p, col in zip(ring_pts, ring_cols):
-            ring_grid[col] = p
+        # Place ONLY valid original points
+        for p, col, v in zip(ring_pts, ring_cols, ring_valid):
+            if v:
+                ring_grid[col] = p
 
         elev = beam_altitudes[ring]
         cos_e, sin_e = np.cos(elev), np.sin(elev)
@@ -326,16 +341,16 @@ def fill_ring_known_cols_with_intensity_and_heightfield(
                 interp_flags.append(False)
                 continue
 
+            # Missing return → ray cast
             az = 2 * np.pi * c_idx / NUM_COLS
 
-            # Unit ray direction
             dx = cos_e * np.cos(az)
             dy = cos_e * np.sin(az)
             dz = sin_e
 
             denom = dz - a * dx - b * dy
             if abs(denom) < 1e-6:
-                continue  # ray parallel to height field
+                continue
 
             t = c / denom
             if t <= 0 or t > max_range:
@@ -349,6 +364,57 @@ def fill_ring_known_cols_with_intensity_and_heightfield(
             interp_flags.append(True)
 
     return np.asarray(filled_points), np.asarray(interp_flags)
+    # a, b, c = height_field
+
+    # filled_points = []
+    # interp_flags = []
+
+    # unique_ring_ids = np.arange(64)
+
+    # for ring in unique_ring_ids:
+    #     ring_mask = ring_ids == ring
+    #     ring_pts = points_xyzi[ring_mask]
+    #     ring_cols = col_ids[ring_mask]
+
+    #     ring_grid = [None] * NUM_COLS
+
+    #     # place original points
+    #     for p, col in zip(ring_pts, ring_cols):
+    #         ring_grid[col] = p
+
+    #     elev = beam_altitudes[ring]
+    #     cos_e, sin_e = np.cos(elev), np.sin(elev)
+
+    #     for c_idx in range(NUM_COLS):
+
+    #         if ring_grid[c_idx] is not None:
+    #             filled_points.append(ring_grid[c_idx])
+    #             interp_flags.append(False)
+    #             continue
+
+    #         az = 2 * np.pi * c_idx / NUM_COLS
+
+    #         # Unit ray direction
+    #         dx = cos_e * np.cos(az)
+    #         dy = cos_e * np.sin(az)
+    #         dz = sin_e
+
+    #         denom = dz - a * dx - b * dy
+    #         if abs(denom) < 1e-6:
+    #             continue  # ray parallel to height field
+
+    #         t = c / denom
+    #         if t <= 0 or t > max_range:
+    #             continue
+
+    #         x = t * dx
+    #         y = t * dy
+    #         z = t * dz
+
+    #         filled_points.append([x, y, z, 255])
+    #         interp_flags.append(True)
+
+    # return np.asarray(filled_points), np.asarray(interp_flags)
 
 def create_height_field_mesh(plane, xlim, ylim, resolution=1.0):
     a, b, c = plane
