@@ -26,7 +26,7 @@ parser.add_argument("--location", type=str, default="Cambogan", help="Location n
 parser.add_argument("--sequence", type=str, default="20250811_113017", help="Sequence ID (e.g., 20250811_113017)")
 parser.add_argument("--condition", type=str, default="flooded", help="Condition (e.g., flooded)")
 parser.add_argument("--camera_pos", type=str, default="front", help="Camera position (e.g., front)")
-parser.add_argument("--root", type=str, default="../Datasets/FRED/", help="Root dataset directory (e.g., ../Datasets/FRED/)")
+parser.add_argument("--root", type=str, default="D:/Datasets/FRED/", help="Root dataset directory (e.g., D:/Datasets/FRED/)")
 parser.add_argument("--img_calib_file", type=str, default="./camera_calib.txt", help="Path to camera calibration file (e.g., ./camera_calib.txt)")
 
 args = parser.parse_args()
@@ -75,7 +75,7 @@ else:
 # sequence = '20241217_113410'
 # condition = 'flooded'
 # camera_pos = 'front'
-# root_directory = f"../Datasets/FRED/{condition}/KITTI-style"
+# root_directory = f"D:/Datasets/FRED/{condition}/KITTI-style"
 # # 01000000
 
 ############ Define filenames and directories ####################################
@@ -87,7 +87,8 @@ timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(ima
 
 fig, ax = plt.subplots(figsize=(12.8, 8))
 # idx = [0]  # mutable index
-idx = [183]  # mutable index
+# idx = [183]  # mutable index
+idx = [130]
 
 def show_image(i):
     ax.clear()

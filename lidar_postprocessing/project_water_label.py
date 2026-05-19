@@ -23,7 +23,7 @@ sequence = '20250811_113017'
 # sequence = '20241217_113410'
 condition = 'flooded'
 camera_pos = 'front'
-root_directory = f"D:/Datasets/FRED/{condition}/KITTI-style"
+root_directory = f"C:/Users/conno/Documents/data/FRED/{condition}/KITTI-style/" # f"D:/Datasets/FRED/{condition}/KITTI-style"
 # 01000000
 
 ############ Define filenames and directories ####################################

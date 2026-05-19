@@ -15,17 +15,22 @@ from natsort import natsorted
 cmap = plt.get_cmap("jet")
 
 # User parameters
-location = 'Cambogan'
-sequence = '20250811_113017'
-# sequence = '20250812_122101'
+# location = 'Cambogan'
+# sequence = '20250811_113017'
+# sequence = '20250812_122339' #'20250812_122101'
 # location = 'Holmview'
 # sequence = '20250820_130327'
 # location = 'Mount-Cotton'
 # sequence = '20241217_113410'
+# location   = 'Pullenvale'
+# sequence   = '20250916_124105'
+location     = 'DairyCreek'
+sequence     = '20250811_103318'
 condition = 'flooded'
 # condition = 'dry'
 camera_pos = 'front'
-root_directory = f"../Datasets/FRED/{condition}/KITTI-style"
+# root_directory = f"C:/Users/conno/Documents/data/FRED/{condition}/KITTI-style/" #f"D:/Datasets/FRED/{condition}/KITTI-style"
+root_directory = f"U:/Research/Projects/KVFPRA9190/FRED/{condition}/KITTI-style" 
 # 01000000
 
 ############ Define filenames and directories ####################################
@@ -43,7 +48,8 @@ timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(ima
 
 fig, ax = plt.subplots(figsize=(12.8, 8))
 # idx = [0]  # mutable index
-idx = [183]
+# idx = [183]
+idx = [200]
 
 def show_image(i):
     ax.clear()
@@ -60,7 +66,11 @@ def show_image(i):
 
 
         point_cam, distances_cam, intensities_cam, all_points_cam, valid_cam = pointcloud.points_ouster_to_cam() #, beam_id, azimuth
-        img_vis, _, _ = image.project_points(all_points_cam, distances_cam, cmap, valid_cam, colour_norm=None) #, beam_id, azimuth
+
+        p_high = np.percentile(intensities_cam, 99)
+        intensities_cam = np.clip(intensities_cam, 0, p_high) / p_high * 255
+
+        img_vis, _, _, _ = image.project_points(all_points_cam, intensities_cam, cmap, valid_cam, colour_norm=255) #, beam_id, azimuth
 
         ax.imshow(img_vis[:, :, ::-1])
         ax.set_title(f"{image_timestamp}.png")

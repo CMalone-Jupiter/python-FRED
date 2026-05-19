@@ -100,7 +100,7 @@ class ImageData():
             print(f"ERROR in create_camera_matrix: {e}")
             return None
         
-    def project_points(self, points, colours, cmap, valid_cam, colour_norm=None):
+    def project_points(self, points, colours, cmap, valid_cam, colour_norm=None, semantic_label=False):
         # , beam_id, azimuth
         # Project to image coordinates
         rvec = np.zeros(3)  # No additional rotation
@@ -122,14 +122,36 @@ class ImageData():
         else:
             colour2project = colours[valid_mask]/colour_norm
 
+        if semantic_label:
+            # Build meta_points: x, y, z, intensity, u, v, semantic_label
+            valid_3d = points[valid_mask]           # (N, 3) xyz in camera frame
+            valid_intensity = colours[valid_mask]   # (N,) intensity
+            valid_uv = points2project               # (N, 2) pixel coords
+            valid_labels = np.array([
+                self.label_img[int(pt[1]), int(pt[0])]
+                for pt in valid_uv
+            ])
+
+            meta_points = np.column_stack([
+                valid_3d,           # x, y, z
+                valid_intensity,    # intensity
+                valid_uv,           # u, v
+                valid_labels        # semantic label
+            ])
+
         img_vis = self.image.copy()
+        mask_img = np.zeros((self.image.shape[0], self.image.shape[1]))
         # Draw points
         for (point, c) in zip(points2project.astype(int), colour2project):
             r, g, b, _ = cmap(c)
             colour = (r*255, g*255, b*255)
             cv2.circle(img_vis, (int(point[0]), int(point[1])), 5, colour, -1)  # -1 = filled circle
+            cv2.circle(mask_img, (int(point[0]), int(point[1])), 10, 255, -1)
 
-        return img_vis, image_points, valid_img_mask
+        if semantic_label:
+            return img_vis, image_points, valid_mask, mask_img, meta_points
+        else:
+            return img_vis, image_points, valid_mask, mask_img
     
     def get_image_coords(self, points):
         # Project to image coordinates

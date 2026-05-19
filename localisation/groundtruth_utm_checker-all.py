@@ -23,7 +23,7 @@ location = 'Cambogan'
 qry_sequence = '20250811_113017'
 qry_condition = 'flooded'
 qry_camera_pos = 'front'
-qry_root_directory = f"../Datasets/FRED/{qry_condition}/KITTI-style"
+qry_root_directory = f"D:/Datasets/FRED/{qry_condition}/KITTI-style"
 
 qry_image_dir = f"{qry_root_directory}/{location}_{qry_sequence}/{qry_camera_pos}-imgs/"
 qry_utm_dir = f"{qry_root_directory}/{location}_{qry_sequence}/utm/"
@@ -34,7 +34,7 @@ qry_timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir
 ref_sequence = '20250812_122339'
 ref_condition = 'dry'
 ref_camera_pos = 'front'
-ref_root_directory = f"../Datasets/FRED/{ref_condition}/KITTI-style"
+ref_root_directory = f"D:/Datasets/FRED/{ref_condition}/KITTI-style"
 
 ref_image_dir = f"{ref_root_directory}/{location}_{ref_sequence}/{ref_camera_pos}-imgs/"
 ref_utm_dir = f"{ref_root_directory}/{location}_{ref_sequence}/utm/"
@@ -49,7 +49,8 @@ dist_tolerance = 10 # metres
 
 fig, ax = plt.subplots(1, 2, figsize=(19.4, 6))
 # idx = [0]  # mutable index
-idx = [183]
+# idx = [183]
+idx = [130]-
 
 def show_image(i):
     ax[0].clear()
@@ -93,7 +94,7 @@ def show_image(i):
         ax[1].set_title(f"No Match (min dist={closest_dist:.2f}m)")
 
     ax[1].axis("off")
-    plt.savefig('paper_figures/localization_check.pdf', format="pdf", bbox_inches='tight')
+    # plt.savefig('paper_figures/localization_check.pdf', format="pdf", bbox_inches='tight')
     fig.canvas.draw()
 
 def on_key(event):

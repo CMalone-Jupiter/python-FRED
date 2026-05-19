@@ -112,7 +112,7 @@ class PointCloud:
 
         return pts_cam_h[valid,:], distances, points[valid,3]
     
-    def destagger(self, points, ground_labels, inlier_labels):
+    def destagger(self):
 
         pixel_shift_by_row = np.array(self.pixel_shift_by_row)
 
@@ -135,9 +135,9 @@ class PointCloud:
 
         
         # --- reshape ---
-        pc_img = points.reshape(W, H, 4).transpose(1, 0, 2)   # (64, 1024, 4)
-        lbl_img = ground_labels.reshape(W, H).T                      # (64, 1024)
-        inlier_img = inlier_labels.reshape(W, H).T 
+        pc_img = self.points.reshape(W, H, 4).transpose(1, 0, 2)   # (64, 1024, 4)
+        lbl_img = self.ground_semantic.reshape(W, H).T                      # (64, 1024)
+        inlier_img = self.ground_inlier.reshape(W, H).T 
 
         rows = np.arange(H)[:, None]
         cols = np.arange(W)[None, :]
