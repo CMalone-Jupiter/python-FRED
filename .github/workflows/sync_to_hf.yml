@@ -16,13 +16,24 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python -c "
+          import shutil, os
           from huggingface_hub import HfApi
+
           api = HfApi(token='$HF_TOKEN')
+
+          # Copy repo to a temp folder
+          shutil.copytree('.', '/tmp/hf_upload', ignore=shutil.ignore_patterns(
+              '.git', '.github', 'assets', 'README.md'
+          ))
+
+          # Rename HF_README.md to README.md
+          os.rename('/tmp/hf_upload/HF_README.md', '/tmp/hf_upload/README.md')
+
+          # Upload from temp folder
           api.upload_folder(
-            folder_path='.',
-            repo_id='CMalone-Jupiter/python-FRED',
-            repo_type='space',
-            ignore_patterns=['.git/*', '.github/*', 'assets/*', 'README.md'],
-            delete_patterns=['*', '!README.md']
+              folder_path='/tmp/hf_upload',
+              repo_id='CMalone-Jupiter/python-FRED',
+              repo_type='space',
+              delete_patterns='*'
           )
           "
