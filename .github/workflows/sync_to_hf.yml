@@ -22,7 +22,7 @@ jobs:
             folder_path='.',
             repo_id='CMalone-Jupiter/python-FRED',
             repo_type='space',
-            ignore_patterns=['.git/*', '.github/*'],
-            delete_patterns='*'
+            ignore_patterns=['.git/*', '.github/*', 'assets/*', 'README.md'],
+            delete_patterns=['*', '!README.md']
           )
           "
