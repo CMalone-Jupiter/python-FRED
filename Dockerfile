@@ -84,6 +84,21 @@ USER user
 RUN --mount=target=requirements.txt,source=requirements.txt \
     pip install --no-cache-dir --upgrade -r requirements.txt
 
+# Packages from pixi.toml
+RUN pip install --no-cache-dir \
+    "numpy>=2.4.3,<3" \
+    "pytest>=9.0.3,<10" \
+    "scipy>=1.17.1,<2" \
+    "scikit-learn>=1.8.0,<2" \
+    "tqdm>=4.67.3,<5" \
+    "pillow>=12.2.0,<13" \
+    "opencv-python>=4.13.0,<5" \
+    "open3d>=0.19.0,<0.20" \
+    "matplotlib>=3.10.8,<4" \
+    "natsort>=8.4.0,<9" \
+    "pyyaml>=6.0.3,<7" \
+    "httpx>=0.28.1,<0.29"
+
 # App files
 COPY --chown=user:user . /home/user/app
 
