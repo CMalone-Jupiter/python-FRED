@@ -1,8 +1,8 @@
 # python-FRED  
-[![License: MIT](https://img.shields.io/badge/License-CC%20by%20nc%sa%204.0-red.svg?style=flat)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![License: MIT](https://img.shields.io/badge/License-CC-red.svg?style=flat)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![QUT Centre for Robotics](https://img.shields.io/badge/collection-AVR3-orange?style=flat)](https://avr3.org.au/)
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
-[![stars](https://img.shields.io/github/stars/CMalone-Jupiter/HOPS?style=flat)](https://github.com/AVR3-Training-Centre/python-FRED/stargazers)
+[![stars](https://img.shields.io/github/stars/AVR3-Training-Centre/python-FRED?style=flat)](https://github.com/AVR3-Training-Centre/python-FRED/stargazers)
 [![GitHub repo size](https://img.shields.io/github/repo-size/AVR3-Training-Centre/python-FRED?style=flat)](./README.md)
 
 <p align="center">
