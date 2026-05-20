@@ -112,4 +112,8 @@ RUN chmod +x /home/user/app/start_server.sh
 # Jupyter template path for Python 3.12
 COPY --chown=user:user login.html /home/user/miniconda/lib/python3.12/site-packages/jupyter_server/templates/login.html
 
+RUN mkdir -p /home/user/.jupyter/custom && \
+    echo ".jp-Cell-outputWrapper { min-height: 24px; } .jp-MarkdownOutput p, .jp-MarkdownOutput h1, .jp-MarkdownOutput h2 { margin: 4px 0; }" \
+    > /home/user/.jupyter/custom/custom.css
+
 CMD ["./start_server.sh"]
