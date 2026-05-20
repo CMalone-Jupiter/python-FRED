@@ -2,7 +2,7 @@
 [![License: CC](https://img.shields.io/badge/License-CC%20by%20nc%20sa-red.svg?style=flat)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![AVR3](https://img.shields.io/badge/collection-AVR3-orange?style=flat)](https://avr3.org.au/)
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
-[![HF Badge](https://img.shields.io/badge/Available%20on-HuggingFace-yellow?style=flat)](https://huggingface.co/spaces/CMalone-Jupiter/python-FRED)
+[![Huggingface](https://img.shields.io/badge/🤗%20Available%20on-%20Huggingface-FF9D00?style=flat)](https://huggingface.co/spaces/CMalone-Jupiter/python-FRED)
 [![stars](https://img.shields.io/github/stars/AVR3-Training-Centre/python-FRED?style=flat)](https://github.com/AVR3-Training-Centre/python-FRED/stargazers)
 [![GitHub repo size](https://img.shields.io/github/repo-size/AVR3-Training-Centre/python-FRED?style=flat)](./README.md)
 
