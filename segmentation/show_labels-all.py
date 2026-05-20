@@ -15,6 +15,12 @@ from natsort import natsorted
 import json
 import yaml  # pip install pyyaml
 
+# Toggle the following boolean to False if not using HuggingFace App
+hf_app = True
+
+if hf_app:
+    from huggingface_hub import snapshot_download
+
 cmap = plt.get_cmap("jet")
 
 # ---------------- Argument Parsing ---------------- #
@@ -26,7 +32,7 @@ parser.add_argument("--location", type=str, default="Cambogan", help="Location n
 parser.add_argument("--sequence", type=str, default="20250811_113017", help="Sequence ID (e.g., 20250811_113017)")
 parser.add_argument("--condition", type=str, default="flooded", help="Condition (e.g., flooded)")
 parser.add_argument("--camera_pos", type=str, default="front", help="Camera position (e.g., front)")
-parser.add_argument("--root", type=str, default="D:/Datasets/FRED/", help="Root dataset directory (e.g., D:/Datasets/FRED/)")
+parser.add_argument("--root", type=str, default="/data/FRED/", help="Root dataset directory (e.g., D:/Datasets/FRED/)")
 parser.add_argument("--img_calib_file", type=str, default="./camera_calib.txt", help="Path to camera calibration file (e.g., ./camera_calib.txt)")
 
 args = parser.parse_args()
@@ -64,19 +70,14 @@ else:
     root_directory = f"{args.root}/{args.condition}/KITTI-style"
     img_calib_file = args.img_calib_file
 
-# # User parameters
-# # location = 'Cambogan'
-# # sequence = '20250811_113017'
-# # location = 'Holmview'
-# # sequence = '20250820_130327'
-# # location = 'Pullenvale'
-# # sequence = '20250916_124105'
-# location = 'Mount-Cotton'
-# sequence = '20241217_113410'
-# condition = 'flooded'
-# camera_pos = 'front'
-# root_directory = f"D:/Datasets/FRED/{condition}/KITTI-style"
-# # 01000000
+if (not os.path.exists(root_directory)) and (hf_app):
+    snapshot_download(
+        repo_id="CMalone-Jupiter/FRED",
+        repo_type="dataset",
+        local_dir="/data/FRED",
+        allow_patterns=f"{condition}/KITTI-style/{location}_{sequence}/**",
+        token=os.environ.get("HF_TOKEN")
+    )
 
 ############ Define filenames and directories ####################################
 
@@ -86,9 +87,7 @@ img_calib_file = f"./camera_calib.txt"
 timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(image_dir)) if os.path.isfile(image_dir+filename)]
 
 fig, ax = plt.subplots(figsize=(12.8, 8))
-# idx = [0]  # mutable index
-# idx = [183]  # mutable index
-idx = [130]
+idx = [0]  # mutable index
 
 def show_image(i):
     ax.clear()
@@ -111,7 +110,6 @@ def show_image(i):
         ax.imshow(overlay_img[:, :, ::-1])
         ax.set_title(f"{image_timestamp}.png")
         ax.axis("off")
-        # plt.savefig('paper_figures/semantic_image_labels.pdf', format="pdf", bbox_inches='tight')
         fig.canvas.draw()
     except Exception as e:
         print(f"Could not show label for {image_timestamp}.png: {e}")

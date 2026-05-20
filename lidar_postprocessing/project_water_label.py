@@ -12,19 +12,28 @@ from utils.camera import ImageData
 import utils.utils as utils
 from natsort import natsorted
 
+hf_app = True
+
+if hf_app:
+    from huggingface_hub import snapshot_download
+
 cmap = plt.get_cmap("jet")
 
 # User parameters
 location = 'Cambogan'
 sequence = '20250811_113017'
-# location = 'Holmview'
-# sequence = '20250820_130327'
-# location = 'Mount-Cotton'
-# sequence = '20241217_113410'
 condition = 'flooded'
 camera_pos = 'front'
-root_directory = f"C:/Users/conno/Documents/data/FRED/{condition}/KITTI-style/" # f"D:/Datasets/FRED/{condition}/KITTI-style"
-# 01000000
+root_directory = f"/data/FRED/{condition}/KITTI-style"
+
+if (not os.path.exists(root_directory)) and (hf_app):
+    snapshot_download(
+        repo_id="CMalone-Jupiter/FRED",
+        repo_type="dataset",
+        local_dir="/data/FRED",
+        allow_patterns=f"{condition}/KITTI-style/{location}_{sequence}/**",
+        token=os.environ.get("HF_TOKEN")
+    )
 
 ############ Define filenames and directories ####################################
 
@@ -37,7 +46,6 @@ lidar_calib_file = f"./calib.txt"
 
 timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(image_dir)) if os.path.isfile(image_dir+filename)]
 
-# timestamps.sort()
 
 fig, ax = plt.subplots(figsize=(12.8, 8))
 idx = [0]  # mutable index

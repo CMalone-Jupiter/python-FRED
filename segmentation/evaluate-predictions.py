@@ -16,6 +16,12 @@ import json
 import yaml  # pip install pyyaml
 from tqdm import tqdm
 
+# Toggle the following boolean to False if not using HuggingFace App
+hf_app = True
+
+if hf_app:
+    from huggingface_hub import snapshot_download
+
 cmap = plt.get_cmap("jet")
 
 # ---------------- Argument Parsing ---------------- #
@@ -27,7 +33,7 @@ parser.add_argument("--location", type=str, default="Cambogan", help="Location n
 parser.add_argument("--sequence", type=str, default="20250811_113017", help="Sequence ID (e.g., 20250811_113017)")
 parser.add_argument("--condition", type=str, default="flooded", help="Condition (e.g., flooded)")
 parser.add_argument("--camera_pos", type=str, default="front", help="Camera position (e.g., front)")
-parser.add_argument("--root", type=str, default="../Datasets/FRED/", help="Root dataset directory (e.g., ../Datasets/FRED/)")
+parser.add_argument("--root", type=str, default="/data/FRED/", help="Root dataset directory (e.g., ../Datasets/FRED/)")
 parser.add_argument("--masks", type=str, required=True, help="Where predicted masks are saved")
 parser.add_argument("--img_calib_file", type=str, default="./camera_calib.txt", help="Path to camera calibration file (e.g., ./camera_calib.txt)")
 parser.add_argument('--vis', action='store_true', help="Store visual comparisons of the predictions and labels")
@@ -68,19 +74,14 @@ else:
     root_directory = f"{args.root}/{args.condition}/KITTI-style"
     img_calib_file = args.img_calib_file
 
-# # User parameters
-# # location = 'Cambogan'
-# # sequence = '20250811_113017'
-# # location = 'Holmview'
-# # sequence = '20250820_130327'
-# # location = 'Pullenvale'
-# # sequence = '20250916_124105'
-# location = 'Mount-Cotton'
-# sequence = '20241217_113410'
-# condition = 'flooded'
-# camera_pos = 'front'
-# root_directory = f"../Datasets/FRED/{condition}/KITTI-style"
-# # 01000000
+if (not os.path.exists(root_directory)) and (hf_app):
+    snapshot_download(
+        repo_id="CMalone-Jupiter/FRED",
+        repo_type="dataset",
+        local_dir="/data/FRED",
+        allow_patterns=f"{condition}/KITTI-style/{location}_{sequence}/**",
+        token=os.environ.get("HF_TOKEN")
+    )
 
 ############ Define filenames and directories ####################################
 
@@ -93,7 +94,6 @@ mask_filenames = [filename for filename in natsorted(os.listdir(args.masks)) if 
 
 fig, ax = plt.subplots(figsize=(12.8, 8))
 idx = 0  # mutable index
-# idx = 183  # mutable index
 
 def load_image_data(i):
     image_timestamp = timestamps[i]
@@ -105,7 +105,6 @@ def load_image_data(i):
 
         return water_label.astype(int)
 
-        # label_mask = np.any(image.colour_label != image.semantic_classes['other'], axis=-1)
     except Exception as e:
         print(f"Could not show label for {image_timestamp}.png: {e}")
 
@@ -171,21 +170,13 @@ iou_scores = []
 for i in tqdm(range(idx, len(timestamps))):
 
     img_label = load_image_data(i)
-    # print(mask_filenames[i])
     pred_label = (cv2.cvtColor(cv2.imread(args.masks+mask_filenames[i]), cv2.COLOR_BGR2GRAY)/255).astype(int)
 
-    # cv2.imshow('pred', cv2.resize(cv2.cvtColor(cv2.imread(args.masks+mask_filenames[i]), cv2.COLOR_BGR2GRAY), (640, 480)))
-    # cv2.waitKey(0)
-
-    # print(f"label shape: {img_label.shape}, label values: {np.unique(img_label)}")
-    # print(f"pred shape: {pred_label.shape}, pred values: {np.unique(pred_label)}")
-    # break
     iou = calculate_iou(img_label, pred_label)
     iou_scores.append(iou)
     if args.vis:
         os.makedirs(args.output, exist_ok=True)
         save_mask_comparison(img_label, pred_label, f"{args.output}/{timestamps[i]}.png", iou)
 
-    # break
 
 print(f"Mean IOU for water predictions: {np.mean(np.array(iou_scores))}")

@@ -12,20 +12,29 @@ from utils.camera import ImageData
 import utils.utils as utils
 from natsort import natsorted
 
+hf_app = True
+
+if hf_app:
+    from huggingface_hub import snapshot_download
+
 cmap = plt.get_cmap("jet")
 LABEL_UNKNOWN = -1
 
 # User parameters
 location = 'Cambogan'
 sequence = '20250811_113017'
-# location = 'Holmview'
-# sequence = '20250820_130327'
-# location = 'Mount-Cotton'
-# sequence = '20241217_113410'
 condition = 'flooded'
 camera_pos = 'front'
-root_directory = f"../Datasets/FRED/{condition}/KITTI-style"
-# 01000000
+root_directory = f"/data/FRED/{condition}/KITTI-style"
+
+if (not os.path.exists(root_directory)) and (hf_app):
+    snapshot_download(
+        repo_id="CMalone-Jupiter/FRED",
+        repo_type="dataset",
+        local_dir="/data/FRED",
+        allow_patterns=f"{condition}/KITTI-style/{location}_{sequence}/**",
+        token=os.environ.get("HF_TOKEN")
+    )
 
 ############ Define filenames and directories ####################################
 
@@ -41,10 +50,8 @@ timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(ima
 groundplane_eqn = tuple(np.loadtxt(f"{root_directory}/{location}_{sequence}/ground_plane_eqn.txt"))
 a, b, c, d = groundplane_eqn
 
-# timestamps.sort()
 
 fig, ax = plt.subplots(figsize=(12.8, 8))
-# idx = [0]  # mutable index
 idx = [183]
 
 def show_image(i):
@@ -83,43 +90,9 @@ def show_image(i):
 
         img_vis, uv, valid_img = image.project_points(all_points_cam, semantic_labels, cmap, valid_cam) #, beam_id, azimuth
 
-        # filtered_points = pointcloud.points[(semantic_labels==0) & (abs(pointcloud.points[:,1]) < 1),:]
-        # max_lookahead = filtered_points[:,0].max()
-        # far_points = filtered_points[filtered_points[:,0]==max_lookahead,:]
-
-        # if far_points.shape[0] > 1:
-        #     far_point = far_points[abs(far_points[:,1]) == abs(far_points[:,1]).min(),:]
-        # else:
-        #     far_point = far_points
-        # far_point_cam, far_point_distnace, far_point_intensity = pointcloud.select_points_ouster_to_cam(far_point)
-        # far_pixel = image.get_image_coords(far_point_cam)
-
-        # if far_pixel is not None and len(far_pixel) > 0:
-        #     u, v = far_pixel[0]  # pixel coordinates
-
-        # h, w = img_vis.shape[:2]
-        # bottom_center = (w // 2, h)
-
-        # ax.plot(
-        #     [bottom_center[0], u],
-        #     [bottom_center[1], v],
-        #     color="lime",
-        #     linewidth=2
-        # )
-        # ax.text(
-        #     u,
-        #     v - 10,
-        #     f"{far_point[0,0]:.2f}",
-        #     color="lime",
-        #     fontsize=12,
-        #     ha="center",
-        #     bbox=dict(facecolor="black", alpha=0.6, edgecolor="none")
-        # )
-
         ax.imshow(img_vis[:, :, ::-1])
         ax.set_title(f"{image_timestamp}.png")
         ax.axis("off")
-        # plt.savefig('paper_figures/labelled_pointcloud.pdf', format="pdf", bbox_inches='tight')
         fig.canvas.draw()
 
     except Exception as e:
