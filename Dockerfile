@@ -97,7 +97,8 @@ RUN pip install --no-cache-dir \
     "matplotlib>=3.10.8,<4" \
     "natsort>=8.4.0,<9" \
     "pyyaml>=6.0.3,<7" \
-    "httpx>=0.28.1,<0.29"
+    "httpx>=0.28.1,<0.29" \
+    "huggingface_hub[hf_xet]"
 
 # Register miniconda Python as the Jupyter kernel so imports work correctly
 RUN pip install --no-cache-dir ipykernel && \
