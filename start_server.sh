@@ -16,4 +16,5 @@ jupyter-lab \
     --ServerApp.disable_check_xsrf=True \
     --LabApp.news_url=None \
     --LabApp.check_for_updates_class="jupyterlab.NeverCheckForUpdate" \
+    --LabApp.default_url="/lab/tree/welcome.ipynb" \
     --notebook-dir=$NOTEBOOK_DIR
