@@ -1,7 +1,7 @@
 #!/bin/bash
 JUPYTER_TOKEN="${JUPYTER_TOKEN:=huggingface}"
 
-NOTEBOOK_DIR="/data"
+NOTEBOOK_DIR="/home/user/app"
 
 jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
 

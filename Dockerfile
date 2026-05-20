@@ -99,6 +99,10 @@ RUN pip install --no-cache-dir \
     "pyyaml>=6.0.3,<7" \
     "httpx>=0.28.1,<0.29"
 
+# Register miniconda Python as the Jupyter kernel so imports work correctly
+RUN pip install --no-cache-dir ipykernel && \
+    python -m ipykernel install --user --name python3 --display-name "Python 3"
+
 # App files
 COPY --chown=user:user . /home/user/app
 
