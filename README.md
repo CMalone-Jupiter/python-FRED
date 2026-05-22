@@ -19,6 +19,18 @@ Preprint Paper: https://arxiv.org/abs/2605.22018
 Huggingface Space: https://huggingface.co/spaces/CMalone-Jupiter/python-FRED  
 Research Group: https://avr3.org.au/ 
 
+## Cite
+If you use this dataset or development kit in your work, you can cite our preprint article using:  
+```
+@article{malone2026fred,
+      title={FRED: A Multi-Modal Autonomous Driving Dataset for Flooded Road Environments}, 
+      author={Connor Malone and Sebastien Demmel and Sebastien Glaser},
+      year={2026},
+      journal={Arxiv},
+      url={https://arxiv.org/abs/2605.22018},
+}
+```
+
 ## Install
 Currently the SDK comes with a pixi.toml file that can be used to set up a python environment using the pixi package manager. In addition, a DockerFile is provided for use in this Huggingface app for online usage of the SDK and dataset. This may be able to be used to create a Docker environment on your own computer, however, this functionality is not tested.
 
