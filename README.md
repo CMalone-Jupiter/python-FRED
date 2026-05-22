@@ -2,9 +2,11 @@
 [![License: CC](https://img.shields.io/badge/License-CC%20by%20nc%20sa-red.svg?style=flat)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![AVR3](https://img.shields.io/badge/collection-AVR3-orange?style=flat)](https://avr3.org.au/)
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
+[![AVR3](https://img.shields.io/badge/Arxiv-Preprint-red?style=flat)](https://arxiv.org/abs/2605.22018)
 [![Huggingface](https://img.shields.io/badge/🤗%20Available%20on-%20Huggingface-FF9D00?style=flat)](https://huggingface.co/spaces/CMalone-Jupiter/python-FRED)
 [![stars](https://img.shields.io/github/stars/AVR3-Training-Centre/python-FRED?style=flat)](https://github.com/AVR3-Training-Centre/python-FRED/stargazers)
 [![GitHub repo size](https://img.shields.io/github/repo-size/AVR3-Training-Centre/python-FRED?style=flat)](./README.md)
+
 
 <p align="center">
   <img src="assets/Zoe2-FRED.svg" alt="Zoe 2 img">
@@ -13,6 +15,7 @@ This repository provides the devkit tools for working with the Flooded Road Envi
 
 ## Links
 Dataset: https://huggingface.co/datasets/CMalone-Jupiter/FRED  
+Preprint Paper: https://arxiv.org/abs/2605.22018  
 Huggingface Space: https://huggingface.co/spaces/CMalone-Jupiter/python-FRED  
 Research Group: https://avr3.org.au/ 
 
