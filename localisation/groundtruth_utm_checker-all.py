@@ -12,29 +12,50 @@ from utils.camera import ImageData
 import utils.utils as utils
 from natsort import natsorted
 
+# Toggle the following boolean to False if not using HuggingFace App
+hf_app = True
+
+if hf_app:
+    from huggingface_hub import snapshot_download
+
 cmap = plt.get_cmap("jet")
 
 # User parameters
-# location = 'Holmview'
 location = 'Cambogan'
 
 ################ Query filenames and directories #################################
-# qry_sequence = '20250820_130327'
 qry_sequence = '20250811_113017'
 qry_condition = 'flooded'
 qry_camera_pos = 'front'
-qry_root_directory = f"../Datasets/FRED/{qry_condition}/KITTI-style"
+qry_root_directory = f"/data/FRED/{qry_condition}/KITTI-style"
+
+if (not os.path.exists(qry_root_directory)) and (hf_app):
+    snapshot_download(
+        repo_id="CMalone-Jupiter/FRED",
+        repo_type="dataset",
+        local_dir="/data/FRED",
+        allow_patterns=f"{qry_condition}/KITTI-style/{location}_{qry_sequence}/**",
+        token=os.environ.get("HF_TOKEN")
+    )
 
 qry_image_dir = f"{qry_root_directory}/{location}_{qry_sequence}/{qry_camera_pos}-imgs/"
 qry_utm_dir = f"{qry_root_directory}/{location}_{qry_sequence}/utm/"
 qry_timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(qry_image_dir)) if os.path.isfile(qry_image_dir+filename)]
 
 ################ Reference filenames and directories #################################
-# ref_sequence = '20250812_120100'
 ref_sequence = '20250812_122339'
 ref_condition = 'dry'
 ref_camera_pos = 'front'
-ref_root_directory = f"../Datasets/FRED/{ref_condition}/KITTI-style"
+ref_root_directory = f"/data/FRED/{ref_condition}/KITTI-style"
+
+if (not os.path.exists(ref_root_directory)) and (hf_app):
+    snapshot_download(
+        repo_id="CMalone-Jupiter/FRED",
+        repo_type="dataset",
+        local_dir="/data/FRED",
+        allow_patterns=f"{ref_condition}/KITTI-style/{location}_{ref_sequence}/**",
+        token=os.environ.get("HF_TOKEN")
+    )
 
 ref_image_dir = f"{ref_root_directory}/{location}_{ref_sequence}/{ref_camera_pos}-imgs/"
 ref_utm_dir = f"{ref_root_directory}/{location}_{ref_sequence}/utm/"
@@ -48,8 +69,7 @@ dist_tolerance = 10 # metres
 
 
 fig, ax = plt.subplots(1, 2, figsize=(19.4, 6))
-# idx = [0]  # mutable index
-idx = [183]
+idx = [130]-
 
 def show_image(i):
     ax[0].clear()
@@ -58,7 +78,6 @@ def show_image(i):
         plt.close(fig)
         return
     qry_image_timestamp = qry_timestamps[i]
-    # try:
     qry_image_filename = f"{qry_image_dir}/{qry_image_timestamp}.png"
     qry_utm_timestamp = utils.get_corr_files(qry_image_timestamp, [qry_utm_dir,])
     qry_utm = np.loadtxt(qry_utm_timestamp)
@@ -93,7 +112,6 @@ def show_image(i):
         ax[1].set_title(f"No Match (min dist={closest_dist:.2f}m)")
 
     ax[1].axis("off")
-    plt.savefig('paper_figures/localization_check.pdf', format="pdf", bbox_inches='tight')
     fig.canvas.draw()
 
 def on_key(event):

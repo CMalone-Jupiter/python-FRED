@@ -1,0 +1,68 @@
+{% extends "page.html" %}
+
+
+{% block stylesheet %}
+{% endblock %}
+
+{% block site %}
+
+<div id="jupyter-main-app" class="container">
+    
+    <img src="https://huggingface.co/front/assets/huggingface_logo-noborder.svg" alt="Hugging Face Logo">
+    <h4>Welcome to JupyterLab</h4>
+    
+    <h5>The default token is <span style="color:orange;">huggingface</span></h5>
+  
+    {% if login_available %}
+    {# login_available means password-login is allowed. Show the form. #}
+    <div class="row">
+        <div class="navbar col-sm-8">
+            <div class="navbar-inner">
+                <div class="container">
+                    <div class="center-nav">
+                        <form action="{{base_url}}login?next={{next}}" method="post" class="navbar-form pull-left">
+                            {{ xsrf_form_html() | safe }}
+                            {% if token_available %}
+                            <label for="password_input"><strong>{% trans %}Jupyter token <span title="This is the secret you set up when deploying your JupyterLab space">ⓘ</span> {% endtrans
+                                    %}</strong></label>
+                            {% else %}
+                            <label for="password_input"><strong>{% trans %}Jupyter password:{% endtrans %}</strong></label>
+                            {% endif %}
+                            <input type="password" name="password" id="password_input" class="form-control">
+                            <button type="submit" class="btn btn-default" id="login_submit">{% trans %}Log in{% endtrans
+                                %}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <p>{% trans %}No login available, you shouldn't be seeing this page.{% endtrans %}</p>
+    {% endif %}
+
+      <h5>If you don't have the credentials for this Jupyter space, <a target="_blank" href="https://huggingface.co/spaces/SpacesExamples/jupyterlab?duplicate=true">create your own.</a></h5>
+    <br>
+  
+    <p>This template was created by <a href="https://twitter.com/camenduru" target="_blank" >camenduru</a> and <a href="https://huggingface.co/nateraw" target="_blank" >nateraw</a>, with contributions of <a href="https://huggingface.co/osanseviero" target="_blank" >osanseviero</a> and <a href="https://huggingface.co/azzr" target="_blank" >azzr</a> </p>
+    {% if message %}
+    <div class="row">
+        {% for key in message %}
+        <div class="message {{key}}">
+            {{message[key]}}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if token_available %}
+    {% block token_message %}
+    
+    {% endblock token_message %}
+    {% endif %}
+</div>
+
+{% endblock %}
+
+
+{% block script %}
+{% endblock %}

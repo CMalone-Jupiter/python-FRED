@@ -14,6 +14,12 @@ from natsort import natsorted, index_natsorted
 import torch
 from tqdm import tqdm
 
+# Toggle the following boolean to False if not using HuggingFace App
+hf_app = True
+
+if hf_app:
+    from huggingface_hub import snapshot_download
+
 ################## set device based on cuda availability #################
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -99,15 +105,8 @@ dist_tolerance = 10 # metres
 # qry_idx = 4
 
 # User parameters
-# vpr_desc = 'cosplace'
-# location = 'Holmview'
-# location = 'Cambogan'
 
 ################ Reference filenames and directories #################################
-# ref_sequence = '20250812_120100'
-# 20250812_120856
-# ref_sequence = '20250812_122339'
-# 20250812_122621
 ref_condition = 'dry'
 ref_camera_pos = 'front'
 
@@ -160,14 +159,7 @@ for vpr_desc in vpr_descs:
     for qry_set in qry_sets:
 
         ################ Query filenames and directories #################################
-        # qry_sequence = '20250820_130327'
-        # qry_sequence = '20250812_120856'
-        ###
-        # qry_sequence = '20250811_113017'
-        # qry_sequence = '20250812_122621'
         qry_condition = 'flooded'
-        # qry_sequence = '20250812_122339'
-        # qry_condition = 'dry'
         qry_camera_pos = 'front'
         qry_root_directory = f"../Datasets/FRED/{qry_condition}/KITTI-style"
         qry_vpr_root = f"../Datasets/FRED/vpr_ftrs/{qry_condition}/KITTI-style"
@@ -192,12 +184,6 @@ for vpr_desc in vpr_descs:
             qry_utm_timestamp = utils.get_corr_files(qry_image_timestamp, [qry_utm_dir,])
             qry_utm = np.loadtxt(qry_utm_timestamp)
 
-            # print(f"Number of queries: {len(qry_timestamps)}")
-            # print(f"Number of references{ {len(ref_timestamps)}}")
-            # print(f"Matche  {mInds[qry_idx]}")
-            # print(natsorted(os.listdir(qry_image_dir)))
-            # print(os.listdir(qry_image_dir))
-
             diffs = ref_utms - qry_utm           # shape (N, 2)
             qry_dists = np.linalg.norm(diffs, axis=1)   # shape (N,)
             if qry_dists.min() > dist_tolerance:
@@ -205,9 +191,6 @@ for vpr_desc in vpr_descs:
             else:
                 valid_qry += 1
 
-
-            # ref_utm_timestamp = utils.get_corr_files(ref_timestamps[int(mInds[qry_idx])], [ref_utm_dir,])
-            # ref_utm = np.loadtxt(ref_utm_timestamp)
             ref_utm = np.loadtxt(ref_utm_filenames[int(mInds[qry_idx])])
 
             diff = ref_utm - qry_utm           # shape (N, 2)

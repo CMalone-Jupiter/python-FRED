@@ -12,21 +12,29 @@ from utils.camera import ImageData
 import utils.utils as utils
 from natsort import natsorted
 
+# Toggle the following boolean to False if not using HuggingFace App
+hf_app = True
+
+if hf_app:
+    from huggingface_hub import snapshot_download
+
 cmap = plt.get_cmap("jet")
 
 # User parameters
 location = 'Cambogan'
 sequence = '20250811_113017'
-# sequence = '20250812_122101'
-# location = 'Holmview'
-# sequence = '20250820_130327'
-# location = 'Mount-Cotton'
-# sequence = '20241217_113410'
 condition = 'flooded'
-# condition = 'dry'
 camera_pos = 'front'
-root_directory = f"../Datasets/FRED/{condition}/KITTI-style"
-# 01000000
+root_directory = f"/data/FRED/{condition}/KITTI-style"
+
+if (not os.path.exists(root_directory)) and (hf_app):
+    snapshot_download(
+        repo_id="CMalone-Jupiter/FRED",
+        repo_type="dataset",
+        local_dir="/data/FRED",
+        allow_patterns=f"{condition}/KITTI-style/{location}_{sequence}/**",
+        token=os.environ.get("HF_TOKEN")
+    )
 
 ############ Define filenames and directories ####################################
 
@@ -39,11 +47,9 @@ lidar_calib_file = f"./calib.txt"
 
 timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(image_dir)) if os.path.isfile(image_dir+filename)]
 
-# timestamps.sort()
 
 fig, ax = plt.subplots(figsize=(12.8, 8))
-# idx = [0]  # mutable index
-idx = [183]
+idx = [0]  # mutable index
 
 def show_image(i):
     ax.clear()
@@ -60,12 +66,15 @@ def show_image(i):
 
 
         point_cam, distances_cam, intensities_cam, all_points_cam, valid_cam = pointcloud.points_ouster_to_cam() #, beam_id, azimuth
-        img_vis, _, _ = image.project_points(all_points_cam, distances_cam, cmap, valid_cam, colour_norm=None) #, beam_id, azimuth
+
+        p_high = np.percentile(intensities_cam, 99)
+        intensities_cam = np.clip(intensities_cam, 0, p_high) / p_high * 255
+
+        img_vis, _, _, _ = image.project_points(all_points_cam, intensities_cam, cmap, valid_cam, colour_norm=255) #, beam_id, azimuth
 
         ax.imshow(img_vis[:, :, ::-1])
         ax.set_title(f"{image_timestamp}.png")
         ax.axis("off")
-        # plt.savefig('paper_figures/CADRRAS/projected_pointcloud_distance_flooded.svg', format="svg", bbox_inches='tight')
         fig.canvas.draw()
     except Exception as e:
         print(f"Could not project pointcloud onto {image_timestamp}.png: {e}")
