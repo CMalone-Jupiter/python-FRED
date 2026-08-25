@@ -1,6 +1,6 @@
 import os
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+# import matplotlib.pyplot as plt
+# import matplotlib.image as mpimg
 import sys
 sys.path.append(os.path.abspath("."))   # one level up
 import numpy as np
@@ -10,10 +10,10 @@ from scipy.spatial.transform import Rotation
 from utils.lidar import PointCloud
 from utils.camera import ImageData
 import utils.utils as utils
+from FoL.reranking import run_rerank
 from natsort import natsorted, index_natsorted
 import torch
 from tqdm import tqdm
-from glob import glob
 
 ################## set device based on cuda availability #################
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -53,7 +53,7 @@ def getMatchIndsGPU(ft_ref, ft_qry,topK=20, metric='cosine'):
         dMat = 1 - ft_ref_norm @ ft_qry_norm.t()
 
     # Get the indices of the top 5 closest matches
-    mInds = torch.argsort(dMat.cpu(), dim=0)[:topK].squeeze()
+    mInds = torch.argsort(dMat, dim=0)[:topK].squeeze()
     
     return mInds, dMat
 
@@ -65,17 +65,6 @@ ref_sets = [
     '20230509_115540_v2',
 ]
 
-# vpr_descs = [
-#     'cosplace',
-#     'boq',
-#     'clique-mining',
-#     'cricavpr',
-#     'eigenplaces',
-#     'mixvpr',
-#     'megaloc',
-#     'salad',
-#     'supervlad',
-# ]
 vpr_descs = [
     'FoL',
 ]
@@ -130,20 +119,16 @@ for vpr_desc in vpr_descs:
 
         ref_image_dir = f"{ref_root_directory}/{ref_set}/{ref_camera_pos}-imgs/"
 
-        # ref_name_sort_idx = index_natsorted(os.listdir(ref_image_dir))
-        # Get the two orderings
-        glob_sorted_paths = sorted(glob(f"{ref_image_dir}/*.png"))
-        glob_sorted_filenames = [os.path.basename(p) for p in glob_sorted_paths]
-
-        # Get the indices that would sort glob_sorted_filenames into natsorted order
-        ref_name_sort_idx = index_natsorted(glob_sorted_filenames)
-
-        ref_ftr = np.load(f"{ref_vpr_root}/{ref_set}/{vpr_desc}/queries_descriptors.npy")
+        ref_name_sort_idx = index_natsorted(os.listdir(ref_image_dir))
+        ref_ftr = np.load(f"{ref_vpr_root}/{ref_set}/{vpr_desc}/qry_feats.npy")
+        ref_local_ftr = np.load(f"{ref_vpr_root}/{ref_set}/{vpr_desc}/qry_local_feats.npy")
         if first:
             ref_ftrs = ref_ftr[ref_name_sort_idx]
+            ref_local_ftrs = ref_local_ftr[ref_name_sort_idx]
             first = False
         else:
-            ref_ftrs = np.vstack((ref_ftrs, ref_ftr[ref_name_sort_idx])) # [ref_name_sort_idx]
+            ref_ftrs = np.vstack((ref_ftrs, ref_ftr[ref_name_sort_idx]))
+            ref_local_ftrs = np.vstack((ref_local_ftrs, ref_local_ftr[ref_name_sort_idx]))
 
 
     for qry_set in qry_sets:
@@ -160,32 +145,15 @@ for vpr_desc in vpr_descs:
 
         qry_timestamps = [filename.split('.png')[0] for filename in natsorted(os.listdir(qry_image_dir)) if os.path.isfile(qry_image_dir+filename)]
         qry_utms = np.array([np.loadtxt(qry_utm_dir+filename) for filename in natsorted(os.listdir(qry_utm_dir)) if os.path.isfile(qry_utm_dir+filename)])
-        # qry_name_sort_idx = index_natsorted(os.listdir(qry_image_dir))
-        qry_ftrs = np.load(f"{qry_vpr_root}/{qry_set}/{vpr_desc}/queries_descriptors.npy")
-
-        # Get the two orderings
-        glob_sorted_paths = sorted(glob(f"{qry_image_dir}/*.png"))
-        glob_sorted_filenames = [os.path.basename(p) for p in glob_sorted_paths]
-
-        # Get the indices that would sort glob_sorted_filenames into natsorted order
-        qry_name_sort_idx = index_natsorted(glob_sorted_filenames)
-
+        qry_name_sort_idx = index_natsorted(os.listdir(qry_image_dir))
+        qry_ftrs = np.load(f"{qry_vpr_root}/{qry_set}/{vpr_desc}/qry_feats.npy")
+        qry_local_ftrs = np.load(f"{qry_vpr_root}/{qry_set}/{vpr_desc}/qry_local_feats.npy")
         qry_ftrs = qry_ftrs[qry_name_sort_idx]
+        qry_local_ftrs = qry_local_ftrs[qry_name_sort_idx]
 
-        # paths_sorted = sorted(glob(f"{qry_image_dir}/**/*", recursive=True))
-        # paths_natsorted = natsorted(os.listdir(qry_image_dir))
-        # paths_natsorted_idx = index_natsorted(os.listdir(qry_image_dir))
-
-        # # Compare just the filenames
-        # print(paths_sorted[:3])
-        # print((np.array(paths_sorted)[paths_natsorted_idx])[:3])
-        # print(paths_natsorted[:3])
-
-
-        # print(torch.cuda.memory_allocated()/1e9)
-        # print(torch.cuda.memory_reserved()/1e9)
-        mInds, dMat = getMatchIndsGPU(ref_ftrs,qry_ftrs,topK=1)
-        mInds = mInds.numpy() # .cpu()
+        # mInds, dMat = getMatchIndsGPU(ref_ftrs,qry_ftrs,topK=1)
+        # mInds = mInds.cpu().numpy()
+        mInds = run_rerank(qry_ftrs, ref_ftrs, qry_local_ftrs, ref_local_ftrs, recall_values=[1, 5, 10, 20])[:,0]
         in_tol = []
         dists = []
         valid_qry = 0
